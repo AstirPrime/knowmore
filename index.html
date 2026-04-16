@@ -1,0 +1,2282 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>KnowMore - Study Platform</title>
+  
+  <!-- Load Tailwind CSS for styling -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  
+  <!-- Load React and ReactDOM -->
+  <script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+  <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+  
+  <!-- Load Babel to compile JSX in the browser -->
+  <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+</head>
+<body class="bg-slate-50">
+  <div id="root"></div>
+
+  <script type="text/babel">
+    const { useState, useEffect, useRef } = React;
+
+    // --- ICONS (Converted from Lucide for standalone use) ---
+    const createIcon = (paths) => ({ size = 24, className = '', ...props }) => (
+      <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className} {...props}>
+        {paths}
+      </svg>
+    );
+
+    const Plus = createIcon(<><path d="M12 5v14M5 12h14"/></>);
+    const Trash2 = createIcon(<><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/><line x1="10" y1="11" x2="10" y2="17"/><line x1="14" y1="11" x2="14" y2="17"/></>);
+    const Play = createIcon(<polygon points="5 3 19 12 5 21 5 3"/>);
+    const CheckCircle2 = createIcon(<><circle cx="12" cy="12" r="10"/><path d="m9 12 2 2 4-4"/></>);
+    const XCircle = createIcon(<><circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/></>);
+    const ArrowLeft = createIcon(<><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></>);
+    const Save = createIcon(<><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></>);
+    const Trophy = createIcon(<><path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6"/><path d="M18 9h1.5a2.5 2.5 0 0 0 0-5H18"/><path d="M4 22h16"/><path d="M10 14.66V17c0 .55-.47.98-.97 1.21C7.85 18.75 7 20.24 7 22"/><path d="M14 14.66V17c0 .55.47.98.97 1.21C16.15 18.75 17 20.24 17 22"/><path d="M18 2H6v7a6 6 0 0 0 12 0V2Z"/></>);
+    const BookOpen = createIcon(<><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></>);
+    const AlertCircle = createIcon(<><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></>);
+    const AlertTriangle = createIcon(<><path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></>);
+    const Gem = createIcon(<><path d="M6 3h12l4 6-10 13L2 9Z"/><path d="M11 3 8 9l4 13"/><path d="M13 3l3 6-4 13"/></>);
+    const Edit2 = createIcon(<path d="M17 3a2.828 2.828 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3z"/>);
+    const Copy = createIcon(<><rect x="9" y="9" width="13" height="13" rx="2" ry="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></>);
+    const Eye = createIcon(<><path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z"/><circle cx="12" cy="12" r="3"/></>);
+    const Shuffle = createIcon(<><polyline points="16 3 21 3 21 8"/><line x1="4" y1="20" x2="21" y2="3"/><polyline points="21 16 21 21 16 21"/><line x1="15" y1="15" x2="21" y2="21"/><line x1="4" y1="4" x2="9" y2="9"/></>);
+    const ListOrdered = createIcon(<><line x1="10" y1="6" x2="21" y2="6"/><line x1="10" y1="12" x2="21" y2="12"/><line x1="10" y1="18" x2="21" y2="18"/><path d="M4 6h1v4"/><path d="M4 10h2"/><path d="M6 18H4c0-1 2-2 2-3s-1-1.5-2-1"/></>);
+    const ChevronDown = createIcon(<polyline points="6 9 12 15 18 9"/>);
+    const ChevronUp = createIcon(<polyline points="18 15 12 9 6 15"/>);
+    const Heart = createIcon(<path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z"/>);
+
+    // --- MOCK DATA & CONSTANTS ---
+    const INITIAL_SETS = [
+      {
+        id: '1',
+        title: 'Geography and History',
+        isDefault: true,
+        questions: [
+          { id: 'gh1', text: 'Which continent is known as the "Dark Continent"?', options: ['Asia', 'Africa', 'Europe', 'Australia'], correctIndices: [1], scrambleAnswers: true },
+          { id: 'gh2', text: 'Who was the first President of the United States?', options: ['Abraham Lincoln', 'Thomas Jefferson', 'George Washington'], correctIndices: [2], scrambleAnswers: true },
+          { id: 'gh3', text: 'Which of these are oceans?', options: ['Atlantic', 'Mediterranean', 'Indian', 'Nile'], correctIndices: [0, 2], scrambleAnswers: true },
+          { id: 'gh4', text: 'In which country would you find the Great Pyramid of Giza?', options: ['Mexico', 'Egypt', 'Italy'], correctIndices: [1], scrambleAnswers: true },
+          { id: 'gh5', text: 'Which city is the capital of France?', options: ['Berlin', 'London', 'Paris', 'Madrid'], correctIndices: [2], scrambleAnswers: true }
+        ]
+      },
+      {
+        id: '2',
+        title: 'Math',
+        isDefault: true,
+        questions: [
+          { id: 'm1', text: 'What is 5+7?', options: ['10', '12', '13'], correctIndices: [1], scrambleAnswers: true },
+          { id: 'm2', text: 'Which of these numbers are even?', options: ['4', '7', '10', '15'], correctIndices: [0, 2], scrambleAnswers: true },
+          { id: 'm3', text: 'What is 10×3?', options: ['13', '30', '300'], correctIndices: [1], scrambleAnswers: true },
+          { id: 'm4', text: 'Solve for x: x−2=5.', options: ['3', '7', '10'], correctIndices: [1], scrambleAnswers: true },
+          { id: 'm5', text: 'How many sides does a triangle have?', options: ['3', '4', '5'], correctIndices: [0], scrambleAnswers: true }
+        ]
+      },
+      {
+        id: '3',
+        title: 'Vocabulary',
+        isDefault: true,
+        questions: [
+          { id: 'v1', text: 'What is a synonym for "happy"?', options: ['Sad', 'Joyful', 'Angry'], correctIndices: [1], scrambleAnswers: true },
+          { id: 'v2', text: 'Which of these words are verbs (action words)?', options: ['Run', 'Apple', 'Jump', 'Blue'], correctIndices: [0, 2], scrambleAnswers: true },
+          { id: 'v3', text: 'What is the opposite of "hot"?', options: ['Warm', 'Cold', 'Spicy'], correctIndices: [1], scrambleAnswers: true },
+          { id: 'v4', text: 'A person who cooks food in a restaurant is called a:', options: ['Pilot', 'Chef', 'Doctor'], correctIndices: [1], scrambleAnswers: true },
+          { id: 'v5', text: 'Which word is spelled correctly?', options: ['Tommorow', 'Tomorrow', 'Tomorow'], correctIndices: [1], scrambleAnswers: true }
+        ]
+      }
+    ];
+
+    const AVATAR_RARITIES = {
+      Common: { weight: 43, cost: 50, labelColor: 'text-slate-500', glow: 'text-slate-400' },
+      Rare: { weight: 35, cost: 100, labelColor: 'text-blue-500', glow: 'text-blue-400' },
+      Epic: { weight: 20, cost: 200, labelColor: 'text-purple-600', glow: 'text-purple-400' },
+      Legendary: { weight: 2, cost: 500, labelColor: 'text-amber-500', glow: 'text-amber-400' },
+      Mythic: { weight: 0, cost: 750, labelColor: 'text-red-500', glow: 'text-red-400' }
+    };
+
+    const STORE_PACKS = [
+      { id: 'farm_pack', name: 'Farm Pack', cost: 50, emoji: '🌽', type: 'Farm', color: 'bg-yellow-100', border: 'border-yellow-300' },
+      { id: 'forest_pack', name: 'Forest Pack', cost: 75, emoji: '🌲', type: 'Forest', color: 'bg-green-100', border: 'border-green-300' },
+      { id: 'ocean_pack', name: 'Ocean Pack', cost: 100, emoji: '🐚', type: 'Ocean', color: 'bg-blue-100', border: 'border-blue-300' }
+    ];
+
+    const STORE_AVATARS = [
+      // Base & Seasonals (No pack)
+      { id: 'cat', name: 'Cat', rarity: 'Common', emoji: '🐱', color: 'bg-orange-100', border: 'border-orange-200' },
+      { id: 'dog', name: 'Dog', rarity: 'Common', emoji: '🐶', color: 'bg-sky-100', border: 'border-sky-200' },
+      { id: 'santa', name: 'Santa', rarity: 'Mythic', emoji: '🎅', color: 'bg-red-100', border: 'border-red-200', months: [11] },
+      { id: 'bunny', name: 'Bunny', rarity: 'Mythic', emoji: '🐰', color: 'bg-pink-100', border: 'border-pink-200', months: [3] },
+      { id: 'sun', name: 'Sun', rarity: 'Mythic', emoji: '🌞', color: 'bg-yellow-100', border: 'border-yellow-200', months: [5, 6, 7] },
+      { id: 'ghost', name: 'Ghost', rarity: 'Mythic', emoji: '👻', color: 'bg-slate-100', border: 'border-slate-300', months: [9] },
+      { id: 'default_logo', name: 'KnowMore', rarity: 'Common', cost: 0, emoji: <BookOpen size={48} className="text-indigo-600" />, color: 'bg-indigo-50', border: 'border-indigo-200', unbuyable: true, sellable: false },
+
+      // Farm Pack
+      { id: 'cow', name: 'Cow', rarity: 'Common', pack: 'Farm', emoji: '🐮', color: 'bg-stone-100', border: 'border-stone-200' },
+      { id: 'pig', name: 'Pig', rarity: 'Common', pack: 'Farm', emoji: '🐷', color: 'bg-pink-100', border: 'border-pink-200' },
+      { id: 'chicken', name: 'Chicken', rarity: 'Common', pack: 'Farm', emoji: '🐔', color: 'bg-red-50', border: 'border-red-100' },
+      { id: 'duck', name: 'Duck', rarity: 'Common', pack: 'Farm', emoji: '🦆', color: 'bg-green-100', border: 'border-green-200' },
+      { id: 'donkey', name: 'Donkey', rarity: 'Rare', pack: 'Farm', emoji: '🫏', color: 'bg-gray-200', border: 'border-gray-300' },
+      { id: 'horse', name: 'Horse', rarity: 'Rare', pack: 'Farm', emoji: '🐴', color: 'bg-amber-100', border: 'border-amber-200' },
+      { id: 'sheep', name: 'Sheep', rarity: 'Rare', pack: 'Farm', emoji: '🐑', color: 'bg-slate-100', border: 'border-slate-200' },
+      { id: 'chick', name: 'Chick', rarity: 'Epic', pack: 'Farm', emoji: '🐥', color: 'bg-yellow-100', border: 'border-yellow-200' },
+
+      // Forest Pack
+      { id: 'frog', name: 'Frog', rarity: 'Common', pack: 'Forest', emoji: '🐸', color: 'bg-green-200', border: 'border-green-300' },
+      { id: 'snake', name: 'Snake', rarity: 'Common', pack: 'Forest', emoji: '🐍', color: 'bg-lime-100', border: 'border-lime-200' },
+      { id: 'squirrel', name: 'Squirrel', rarity: 'Common', pack: 'Forest', emoji: '🐿️', color: 'bg-orange-200', border: 'border-orange-300' },
+      { id: 'fox', name: 'Fox', rarity: 'Rare', pack: 'Forest', emoji: '🦊', color: 'bg-orange-100', border: 'border-orange-200' },
+      { id: 'owl', name: 'Owl', rarity: 'Rare', pack: 'Forest', emoji: '🦉', color: 'bg-stone-200', border: 'border-stone-300' },
+      { id: 'deer', name: 'Deer', rarity: 'Rare', pack: 'Forest', emoji: '🦌', color: 'bg-amber-200', border: 'border-amber-300' },
+      { id: 'bear', name: 'Bear', rarity: 'Rare', pack: 'Forest', emoji: '🐻', color: 'bg-yellow-200', border: 'border-yellow-300' },
+      { id: 'porcupine', name: 'Porcupine', rarity: 'Epic', pack: 'Forest', emoji: '🦔', color: 'bg-stone-100', border: 'border-stone-200' },
+      { id: 'panda', name: 'Panda', rarity: 'Epic', pack: 'Forest', emoji: '🐼', color: 'bg-slate-100', border: 'border-slate-200' },
+      { id: 'eagle', name: 'Eagle', rarity: 'Legendary', pack: 'Forest', emoji: '🦅', color: 'bg-yellow-50', border: 'border-yellow-100' },
+
+      // Ocean Pack
+      { id: 'fish', name: 'Fish', rarity: 'Common', pack: 'Ocean', emoji: '🐟', color: 'bg-blue-100', border: 'border-blue-200' },
+      { id: 'crab', name: 'Crab', rarity: 'Common', pack: 'Ocean', emoji: '🦀', color: 'bg-red-100', border: 'border-red-200' },
+      { id: 'otter', name: 'Otter', rarity: 'Common', pack: 'Ocean', emoji: '🦦', color: 'bg-amber-100', border: 'border-amber-200' },
+      { id: 'penguin', name: 'Penguin', rarity: 'Rare', pack: 'Ocean', emoji: '🐧', color: 'bg-sky-100', border: 'border-sky-200' },
+      { id: 'pufferfish', name: 'Pufferfish', rarity: 'Rare', pack: 'Ocean', emoji: '🐡', color: 'bg-yellow-100', border: 'border-yellow-200' },
+      { id: 'shark', name: 'Shark', rarity: 'Rare', pack: 'Ocean', emoji: '🦈', color: 'bg-slate-200', border: 'border-slate-300' },
+      { id: 'squid', name: 'Squid', rarity: 'Rare', pack: 'Ocean', emoji: '🦑', color: 'bg-pink-100', border: 'border-pink-200' },
+      { id: 'dolphin', name: 'Dolphin', rarity: 'Epic', pack: 'Ocean', emoji: '🐬', color: 'bg-cyan-100', border: 'border-cyan-200' },
+      { id: 'jellyfish', name: 'Jellyfish', rarity: 'Epic', pack: 'Ocean', emoji: '🪼', color: 'bg-fuchsia-100', border: 'border-fuchsia-200' },
+      { id: 'octopus', name: 'Octopus', rarity: 'Epic', pack: 'Ocean', emoji: '🐙', color: 'bg-purple-100', border: 'border-purple-200' },
+      { id: 'whale', name: 'Whale', rarity: 'Legendary', pack: 'Ocean', emoji: '🐳', color: 'bg-blue-200', border: 'border-blue-300' },
+
+      // Moon Phases
+      { id: 'moon_new', name: 'New Moon', rarity: 'Mythic', group: 'Moon', emoji: '🌑', color: 'bg-slate-900', border: 'border-slate-700' },
+      { id: 'moon_waxing_crescent', name: 'Waxing Crescent', rarity: 'Legendary', group: 'Moon', emoji: '🌒', color: 'bg-slate-900', border: 'border-slate-700' },
+      { id: 'moon_first_quarter', name: 'First Quarter', rarity: 'Legendary', group: 'Moon', emoji: '🌓', color: 'bg-slate-900', border: 'border-slate-700' },
+      { id: 'moon_waxing_gibbous', name: 'Waxing Gibbous', rarity: 'Legendary', group: 'Moon', emoji: '🌔', color: 'bg-slate-900', border: 'border-slate-700' },
+      { id: 'moon_full', name: 'Full Moon', rarity: 'Mythic', group: 'Moon', emoji: '🌕', color: 'bg-slate-900', border: 'border-slate-700' },
+      { id: 'moon_waning_gibbous', name: 'Waning Gibbous', rarity: 'Legendary', group: 'Moon', emoji: '🌖', color: 'bg-slate-900', border: 'border-slate-700' },
+      { id: 'moon_last_quarter', name: 'Last Quarter', rarity: 'Legendary', group: 'Moon', emoji: '🌗', color: 'bg-slate-900', border: 'border-slate-700' },
+      { id: 'moon_waning_crescent', name: 'Waning Crescent', rarity: 'Legendary', group: 'Moon', emoji: '🌘', color: 'bg-slate-900', border: 'border-slate-700' }
+    ];
+
+    const getMoonPhaseId = () => {
+      const knownNewMoon = new Date('1970-01-07T20:35:00Z').getTime(); // Known historical new moon
+      const lunarCycle = 29.53058770576 * 24 * 60 * 60 * 1000; // Accurate lunar month in milliseconds
+      let phase = ((new Date().getTime() - knownNewMoon) % lunarCycle) / lunarCycle;
+      
+      if (phase < 0) phase += 1; 
+      
+      if (phase < 0.03 || phase >= 0.97) return 'moon_new';
+      if (phase < 0.22) return 'moon_waxing_crescent';
+      if (phase < 0.28) return 'moon_first_quarter';
+      if (phase < 0.47) return 'moon_waxing_gibbous';
+      if (phase < 0.53) return 'moon_full';
+      if (phase < 0.72) return 'moon_waning_gibbous';
+      if (phase < 0.78) return 'moon_last_quarter';
+      return 'moon_waning_crescent';
+    };
+
+    function App() {
+      const [sets, setSets] = useState(() => {
+        const saved = localStorage.getItem('knowMore_sets');
+        return saved ? JSON.parse(saved) : INITIAL_SETS;
+      });
+      const [currentView, setCurrentView] = useState('dashboard');
+      const [dashboardMode, setDashboardMode] = useState('home');
+      const [activeSet, setActiveSet] = useState(null);
+      const [editingSet, setEditingSet] = useState(null);
+      const [gems, setGems] = useState(() => {
+        const saved = localStorage.getItem('knowMore_gems');
+        return saved ? parseInt(saved, 10) : 0;
+      });
+      const [ownedAvatars, setOwnedAvatars] = useState(() => {
+        const saved = localStorage.getItem('knowMore_ownedAvatars');
+        return saved ? JSON.parse(saved) : {'default_logo': 1};
+      });
+      const [equippedAvatar, setEquippedAvatar] = useState(() => {
+        const saved = localStorage.getItem('knowMore_equippedAvatar');
+        return saved ? saved : 'default_logo';
+      });
+      const [minigameDisabled, setMinigameDisabled] = useState(() => {
+        const saved = localStorage.getItem('knowMore_minigameDisabled');
+        return saved ? JSON.parse(saved) : false;
+      });
+
+      // Save state to localStorage natively
+      useEffect(() => { localStorage.setItem('knowMore_sets', JSON.stringify(sets)); }, [sets]);
+      useEffect(() => { localStorage.setItem('knowMore_gems', gems.toString()); }, [gems]);
+      useEffect(() => { localStorage.setItem('knowMore_ownedAvatars', JSON.stringify(ownedAvatars)); }, [ownedAvatars]);
+      useEffect(() => { localStorage.setItem('knowMore_equippedAvatar', equippedAvatar); }, [equippedAvatar]);
+      useEffect(() => { localStorage.setItem('knowMore_minigameDisabled', JSON.stringify(minigameDisabled)); }, [minigameDisabled]);
+
+      const renderView = () => {
+        switch (currentView) {
+          case 'dashboard':
+            return <Dashboard 
+              sets={sets} 
+              onStartStudy={startStudy} 
+              onCreateNew={() => { setEditingSet(null); setCurrentView('create'); }} 
+              onDeleteSet={deleteSet}
+              onEditSet={startEditSet}
+              onDuplicateSet={handleDuplicateSet}
+              onViewSet={(set) => { setActiveSet(set); setCurrentView('details'); }}
+              gems={gems}
+              setGems={setGems}
+              ownedAvatars={ownedAvatars}
+              setOwnedAvatars={setOwnedAvatars}
+              equippedAvatar={equippedAvatar}
+              setEquippedAvatar={setEquippedAvatar}
+              dashboardMode={dashboardMode}
+              setDashboardMode={setDashboardMode}
+            />;
+          case 'create':
+            return <CreateSet 
+              initialData={editingSet}
+              onSave={saveSet} 
+              onCancel={() => { setCurrentView('dashboard'); setEditingSet(null); }} 
+            />;
+          case 'study':
+            return <StudyMode 
+              activeSet={activeSet} 
+              equippedAvatar={equippedAvatar}
+              onComplete={finishStudy} 
+              onCancel={() => setCurrentView('dashboard')} 
+              minigameDisabled={minigameDisabled}
+              setMinigameDisabled={setMinigameDisabled}
+            />;
+          case 'results':
+            return <Results activeSet={activeSet} onBackToDashboard={() => setCurrentView('dashboard')} onRetry={() => startStudy(activeSet)} />;
+          case 'details':
+            return <SetDetails 
+              set={activeSet} 
+              onBack={() => setCurrentView('dashboard')} 
+              onStartStudy={startStudy} 
+              onEdit={startEditSet} 
+              onDuplicate={(s) => { handleDuplicateSet(s); setCurrentView('dashboard'); }} 
+              onDelete={(id) => { deleteSet(id); setCurrentView('dashboard'); }} 
+            />;
+          default:
+            return <Dashboard sets={sets} onStartStudy={startStudy} onCreateNew={() => setCurrentView('create')} onDeleteSet={deleteSet} dashboardMode={dashboardMode} setDashboardMode={setDashboardMode} />;
+        }
+      };
+
+      const startStudy = (set) => {
+        setActiveSet({ ...set, finalScore: 0, questionsAnswered: 0 });
+        setCurrentView('study');
+      };
+
+      const finishStudy = (score, questionsAnswered) => {
+        setActiveSet(prev => ({ ...prev, finalScore: score, questionsAnswered }));
+        if (score > 0) {
+          setGems(prev => prev + score);
+        }
+        setCurrentView('results');
+      };
+
+      const saveSet = (savedSet) => {
+        if (editingSet) {
+          setSets(sets.map(s => s.id === savedSet.id ? savedSet : s));
+        } else {
+          setSets([...sets, savedSet]);
+        }
+        setEditingSet(null);
+        setCurrentView('dashboard');
+      };
+
+      const deleteSet = (setId) => {
+        setSets(sets.filter(s => s.id !== setId));
+      };
+
+      const startEditSet = (set) => {
+        setEditingSet(set);
+        setCurrentView('create');
+      };
+
+      const handleDuplicateSet = (setToDuplicate) => {
+        const duplicatedSet = {
+          ...setToDuplicate,
+          id: Date.now().toString(),
+          title: `${setToDuplicate.title} (Copy)`,
+          isDefault: false, 
+          questions: setToDuplicate.questions.map(q => ({
+            ...q,
+            id: Date.now().toString() + Math.random().toString(36).substring(2, 9)
+          }))
+        };
+        setSets(prev => [...prev, duplicatedSet]);
+      };
+
+      return (
+        <div className="min-h-screen bg-slate-50 text-slate-900 font-sans selection:bg-indigo-100">
+          <header className="bg-white border-b border-slate-200 sticky top-0 z-10">
+            <div className="max-w-4xl mx-auto px-4 h-16 flex items-center justify-between relative">
+              <div 
+                className="flex items-center gap-2 cursor-pointer hover:opacity-80 transition-opacity"
+                onClick={() => { setCurrentView('dashboard'); setDashboardMode('home'); }}
+              >
+                <div className="bg-indigo-600 text-white p-1.5 rounded-lg">
+                  <BookOpen size={20} />
+                </div>
+                <h1 className="text-xl font-bold bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent hidden sm:block">
+                  KnowMore
+                </h1>
+              </div>
+
+              <div className="absolute left-1/2 -translate-x-1/2 flex items-center gap-1.5 bg-purple-100 text-purple-800 px-4 py-1.5 rounded-full font-extrabold shadow-sm border border-purple-200" title="Total Gems">
+                <Gem size={18} className="text-purple-600 fill-purple-300" />
+                <span>{gems}</span>
+              </div>
+
+              {currentView !== 'dashboard' ? (
+                <button 
+                  onClick={() => setCurrentView('dashboard')}
+                  className="text-sm font-medium text-slate-500 hover:text-indigo-600 transition-colors"
+                >
+                  Back to Dashboard
+                </button>
+              ) : (
+                <div className="w-[120px]"></div>
+              )}
+            </div>
+          </header>
+
+          <main className="max-w-4xl mx-auto px-4 py-8">
+            {renderView()}
+          </main>
+        </div>
+      );
+    }
+
+    // ==========================================
+    // VIEW: DASHBOARD
+    // ==========================================
+    function Dashboard({ sets, onStartStudy, onCreateNew, onDeleteSet, onEditSet, onDuplicateSet, onViewSet, gems, setGems, ownedAvatars, setOwnedAvatars, equippedAvatar, setEquippedAvatar, dashboardMode, setDashboardMode }) {
+      const [setToDelete, setSetToDelete] = useState(null);
+      const [activeTab, setActiveTab] = useState('default'); 
+      const [avatarTab, setAvatarTab] = useState('my'); 
+      const [buyModal, setBuyModal] = useState(null);
+      const [buyPackModal, setBuyPackModal] = useState(null);
+      const [packOpening, setPackOpening] = useState(null);
+      const [sellModal, setSellModal] = useState(null);
+      const [sellQuantity, setSellQuantity] = useState(1);
+      const [instantOpen, setInstantOpen] = useState(false);
+      const [packAmount, setPackAmount] = useState(1);
+      const [expandedAvatarSections, setExpandedAvatarSections] = useState({
+        'farm_pack': true,
+        'forest_pack': true,
+        'ocean_pack': true,
+        'moon_phases': true,
+        'other': true
+      });
+      const [scoreDetailsExpanded, setScoreDetailsExpanded] = useState(true);
+
+      const currentMonth = new Date().getMonth();
+      const currentMoonPhaseId = getMoonPhaseId();
+
+      useEffect(() => {
+        const handleEsc = (e) => {
+          if (e.key === 'Escape') {
+            setBuyModal(null);
+            setBuyPackModal(null);
+            setSellModal(null);
+            setSetToDelete(null);
+          }
+        };
+        window.addEventListener('keydown', handleEsc);
+        return () => window.removeEventListener('keydown', handleEsc);
+      }, []);
+
+      useEffect(() => {
+        if (!packOpening) return;
+        const closeItClick = () => setPackOpening(null);
+        const closeItKey = (e) => {
+          if (e.key === 'Escape') setPackOpening(null);
+        };
+        const timer = setTimeout(() => {
+          window.addEventListener('keydown', closeItKey);
+          window.addEventListener('mousedown', closeItClick);
+          window.addEventListener('touchstart', closeItClick);
+        }, 200); 
+        return () => {
+          clearTimeout(timer);
+          window.removeEventListener('keydown', closeItKey);
+          window.removeEventListener('mousedown', closeItClick);
+          window.removeEventListener('touchstart', closeItClick);
+        };
+      }, [packOpening]);
+
+      const confirmDelete = () => {
+        if (setToDelete) {
+          onDeleteSet(setToDelete);
+          setSetToDelete(null);
+        }
+      };
+
+      const handleDuplicate = (set) => {
+        onDuplicateSet(set);
+        setActiveTab('my'); 
+      };
+
+      const confirmBuyIndividual = () => {
+        const cost = buyModal.cost !== undefined ? buyModal.cost : AVATAR_RARITIES[buyModal.rarity].cost;
+        if (gems >= cost) {
+          setGems(prev => prev - cost);
+          setOwnedAvatars(prev => ({ ...prev, [buyModal.id]: (prev[buyModal.id] || 0) + 1 }));
+          setBuyModal(null);
+        }
+      };
+
+      const openPack = (pack, amount) => {
+        setGems(prev => prev - (pack.cost * amount));
+        
+        const packAvatars = STORE_AVATARS.filter(a => a.pack === pack.type);
+        const totalWeight = packAvatars.reduce((sum, a) => sum + AVATAR_RARITIES[a.rarity].weight, 0);
+        
+        let newPulls = [];
+        let currentOwned = { ...ownedAvatars };
+
+        for (let i = 0; i < amount; i++) {
+          let rand = Math.random() * totalWeight;
+          let pulled = packAvatars[0];
+          for (const a of packAvatars) {
+            rand -= AVATAR_RARITIES[a.rarity].weight;
+            if (rand <= 0) {
+              pulled = a;
+              break;
+            }
+          }
+          
+          const isNew = !currentOwned[pulled.id];
+          currentOwned[pulled.id] = (currentOwned[pulled.id] || 0) + 1;
+          newPulls.push({ avatar: pulled, isNew });
+        }
+        
+        setOwnedAvatars(currentOwned);
+        setPackOpening(newPulls);
+      };
+
+      const confirmBuyPack = () => {
+        if (gems >= buyPackModal.cost * packAmount) {
+          openPack(buyPackModal, packAmount);
+          setBuyPackModal(null);
+        }
+      };
+
+      const handlePackClick = (pack) => {
+        if (instantOpen && gems >= pack.cost * packAmount) {
+          openPack(pack, packAmount);
+        } else {
+          setBuyPackModal(pack);
+        }
+      };
+
+      const confirmSell = () => {
+        const q = typeof sellQuantity === 'number' ? sellQuantity : 0;
+        if (q <= 0) return;
+
+        const cost = sellModal.cost !== undefined ? sellModal.cost : AVATAR_RARITIES[sellModal.rarity].cost;
+        setGems(prev => prev + (Math.floor(cost / 2) * q));
+        setOwnedAvatars(prev => {
+          const newOwned = { ...prev };
+          newOwned[sellModal.id] -= q;
+          if (newOwned[sellModal.id] <= 0) delete newOwned[sellModal.id];
+          return newOwned;
+        });
+        if (equippedAvatar === sellModal.id && (!ownedAvatars[sellModal.id] || (ownedAvatars[sellModal.id] - q) <= 0)) {
+          setEquippedAvatar('default_logo'); 
+        }
+        setSellModal(null);
+      };
+
+      const handleOpenSellModal = (avatar) => {
+        setSellModal(avatar);
+        setSellQuantity(1);
+      };
+
+      const toggleAvatarSection = (id) => {
+        setExpandedAvatarSections(prev => ({ ...prev, [id]: !prev[id] }));
+      };
+
+      const displayedSets = sets.filter(s => activeTab === 'default' ? s.isDefault : !s.isDefault);
+
+      const moonPhaseAvatars = STORE_AVATARS.filter(a => a.group === 'Moon');
+      
+      const myAvatarsSections = [
+        ...STORE_PACKS.map(pack => {
+          const packAvatars = STORE_AVATARS.filter(a => a.pack === pack.type);
+          const ownedItems = packAvatars.filter(a => ownedAvatars[a.id] > 0);
+          return {
+            id: pack.id,
+            title: pack.name,
+            total: packAvatars.length,
+            ownedCount: ownedItems.length,
+            items: ownedItems,
+            isPack: true
+          };
+        }),
+        {
+          id: 'moon_phases',
+          title: 'Moon Phases',
+          total: moonPhaseAvatars.length,
+          ownedCount: moonPhaseAvatars.filter(a => ownedAvatars[a.id] > 0).length,
+          items: moonPhaseAvatars.filter(a => ownedAvatars[a.id] > 0),
+          isPack: true
+        }
+      ];
+
+      const otherAvatars = STORE_AVATARS.filter(a => ownedAvatars[a.id] > 0 && !a.pack && a.group !== 'Moon');
+      if (otherAvatars.length > 0) {
+        myAvatarsSections.push({
+          id: 'other',
+          title: 'Other Avatars',
+          items: otherAvatars,
+          isPack: false
+        });
+      }
+
+      let uniqueBaseValue = 0;
+      let rarityCounts = { Common: 0, Rare: 0, Epic: 0, Legendary: 0, Mythic: 0 };
+      let totalSellValue = 0;
+
+      STORE_AVATARS.forEach(a => {
+        const ownedCount = ownedAvatars[a.id] || 0;
+        if (ownedCount > 0) {
+          const cost = a.cost !== undefined ? a.cost : AVATAR_RARITIES[a.rarity].cost;
+          uniqueBaseValue += cost;
+          rarityCounts[a.rarity] = (rarityCounts[a.rarity] || 0) + 1;
+          if (a.sellable !== false) {
+            totalSellValue += Math.floor(cost / 2) * ownedCount;
+          }
+        }
+      });
+
+      let completedPacksCount = 0;
+      STORE_PACKS.forEach(pack => {
+        const packAvatars = STORE_AVATARS.filter(a => a.pack === pack.type);
+        const ownedInPack = packAvatars.filter(a => ownedAvatars[a.id] > 0);
+        if (packAvatars.length > 0 && packAvatars.length === ownedInPack.length) {
+          completedPacksCount++;
+        }
+      });
+
+      const avatarScore = Math.floor(uniqueBaseValue / 20) + (completedPacksCount * 25);
+
+      let tierName = 'Novice';
+      let tierStyles = 'bg-orange-100 text-orange-800 border-orange-300';
+      if (avatarScore >= 500) {
+        tierName = 'Master';
+        tierStyles = 'bg-rose-100 text-rose-800 border-rose-300';
+      } else if (avatarScore >= 200) {
+        tierName = 'Professional';
+        tierStyles = 'bg-yellow-100 text-yellow-800 border-yellow-400';
+      } else if (avatarScore >= 75) {
+        tierName = 'Expert';
+        tierStyles = 'bg-slate-100 text-slate-700 border-slate-300';
+      }
+
+      return (
+        <div className="space-y-4">
+          {/* Pack Opening Celebration Overlay */}
+          {packOpening && (
+            <div className="fixed inset-0 bg-slate-900/90 backdrop-blur-sm flex flex-col items-center justify-center z-[100] p-4 text-center cursor-pointer select-none overflow-y-auto">
+              <div className="flex flex-wrap justify-center gap-4 sm:gap-8 mb-8 max-w-5xl mt-auto">
+                {packOpening.map((pull, idx) => (
+                  <div key={idx} className="flex flex-col items-center animate-bounce" style={{ animationDelay: `${idx * 0.1}s` }}>
+                    <div className={`w-32 h-32 sm:w-48 sm:h-48 text-5xl sm:text-7xl flex items-center justify-center rounded-3xl sm:rounded-[3rem] ${pull.avatar.color} border-[4px] sm:border-[6px] ${pull.avatar.border} mb-4 shadow-[0_0_40px_rgba(255,255,255,0.2)]`}>
+                      {pull.avatar.emoji}
+                    </div>
+                    <h2 className="text-xl sm:text-3xl font-extrabold text-white mb-1 drop-shadow-md">
+                      {pull.avatar.name} {pull.isNew && <span className="text-green-400 drop-shadow-[0_0_10px_rgba(74,222,128,0.8)]">- NEW!</span>}
+                    </h2>
+                    <p className={`text-sm sm:text-xl font-black uppercase tracking-widest drop-shadow-lg ${AVATAR_RARITIES[pull.avatar.rarity].glow}`}>
+                      {pull.avatar.rarity}
+                    </p>
+                  </div>
+                ))}
+              </div>
+              <p className="text-slate-400 mt-auto mb-8 font-medium animate-pulse">Click anywhere to continue</p>
+            </div>
+          )}
+
+          {/* Buy Individual Avatar Modal */}
+          {buyModal && (
+            <div className="fixed inset-0 bg-slate-900/40 backdrop-blur-sm flex items-center justify-center z-50 p-4" onClick={() => setBuyModal(null)}>
+              <div className="bg-white rounded-3xl p-8 max-w-sm w-full shadow-2xl text-center" onClick={(e) => e.stopPropagation()}>
+                <h3 className="text-2xl font-bold text-slate-800 mb-6">Confirm Purchase</h3>
+                <div className={`mx-auto w-32 h-32 text-6xl flex items-center justify-center rounded-3xl ${buyModal.color} border-4 ${buyModal.border} mb-4 shadow-sm`}>
+                   {buyModal.emoji}
+                </div>
+                <p className="text-xl font-bold text-slate-800 mb-1">{buyModal.name}</p>
+                <p className="text-sm font-bold uppercase tracking-wider mb-6 text-slate-400">
+                   {buyModal.rarity}
+                </p>
+                
+                {(() => {
+                  const cost = buyModal.cost !== undefined ? buyModal.cost : AVATAR_RARITIES[buyModal.rarity].cost;
+                  return (
+                    <>
+                      <p className="text-slate-500 mb-8 flex items-center justify-center gap-1.5">
+                         Cost: <Gem size={18} className="text-purple-500 fill-purple-300"/> <span className="font-bold text-slate-700">{cost}</span>
+                      </p>
+                      {gems >= cost ? (
+                        <div className="flex gap-3 justify-center">
+                          <button onClick={() => setBuyModal(null)} className="px-6 py-3 text-slate-600 font-bold bg-slate-100 hover:bg-slate-200 rounded-xl transition-colors w-full">Cancel</button>
+                          <button onClick={confirmBuyIndividual} className="px-6 py-3 bg-purple-600 text-white font-bold hover:bg-purple-700 rounded-xl transition-colors shadow-sm flex items-center justify-center gap-2 w-full">
+                            Buy
+                          </button>
+                        </div>
+                      ) : (
+                        <div className="space-y-4">
+                          <p className="text-red-500 font-bold bg-red-50 py-2 rounded-lg">Not enough gems!</p>
+                          <button onClick={() => setBuyModal(null)} className="px-6 py-3 text-slate-600 font-bold bg-slate-100 hover:bg-slate-200 rounded-xl transition-colors w-full">Cancel</button>
+                        </div>
+                      )}
+                    </>
+                  )
+                })()}
+              </div>
+            </div>
+          )}
+
+          {/* Buy Pack Modal */}
+          {buyPackModal && (
+            <div className="fixed inset-0 bg-slate-900/40 backdrop-blur-sm flex items-center justify-center z-50 p-4" onClick={() => setBuyPackModal(null)}>
+              <div className="bg-white rounded-3xl p-8 max-w-sm w-full shadow-2xl text-center" onClick={(e) => e.stopPropagation()}>
+                <h3 className="text-2xl font-bold text-slate-800 mb-6">Open {packAmount > 1 ? `${packAmount}x Packs` : 'Pack'}</h3>
+                <div className={`mx-auto w-32 h-32 text-6xl flex items-center justify-center rounded-3xl ${buyPackModal.color} border-4 ${buyPackModal.border} mb-4 shadow-sm`}>
+                   {buyPackModal.emoji}
+                </div>
+                <p className="text-xl font-bold text-slate-800 mb-1">{buyPackModal.name}</p>
+                <p className="text-slate-500 mb-8 flex items-center justify-center gap-1.5">
+                   Cost: <Gem size={18} className="text-purple-500 fill-purple-300"/> <span className="font-bold text-slate-700">{buyPackModal.cost * packAmount}</span>
+                </p>
+
+                {gems >= buyPackModal.cost * packAmount ? (
+                  <div className="flex gap-3 justify-center">
+                    <button onClick={() => setBuyPackModal(null)} className="px-6 py-3 text-slate-600 font-bold bg-slate-100 hover:bg-slate-200 rounded-xl transition-colors w-full">Cancel</button>
+                    <button onClick={confirmBuyPack} className="px-6 py-3 bg-purple-600 text-white font-bold hover:bg-purple-700 rounded-xl transition-colors shadow-sm flex items-center justify-center gap-2 w-full">
+                      Open
+                    </button>
+                  </div>
+                ) : (
+                  <div className="space-y-4">
+                    <p className="text-red-500 font-bold bg-red-50 py-2 rounded-lg">Not enough gems!</p>
+                    <button onClick={() => setBuyPackModal(null)} className="px-6 py-3 text-slate-600 font-bold bg-slate-100 hover:bg-slate-200 rounded-xl transition-colors w-full">Cancel</button>
+                  </div>
+                )}
+              </div>
+            </div>
+          )}
+
+          {/* Sell Avatar Modal */}
+          {sellModal && (
+            <div className="fixed inset-0 bg-slate-900/40 backdrop-blur-sm flex items-center justify-center z-50 p-4" onClick={() => setSellModal(null)}>
+              <div className="bg-white rounded-3xl p-8 max-w-sm w-full shadow-2xl text-center" onClick={(e) => e.stopPropagation()}>
+                <h3 className="text-2xl font-bold text-slate-800 mb-6">Confirm Sale</h3>
+                <div className={`mx-auto w-32 h-32 text-6xl flex items-center justify-center rounded-3xl ${sellModal.color} border-4 ${sellModal.border} mb-4 shadow-sm opacity-80`}>
+                   {sellModal.emoji}
+                </div>
+                <p className="text-xl font-bold text-slate-800 mb-1">{sellModal.name}</p>
+                <p className="text-sm font-bold uppercase tracking-wider mb-2 text-slate-400">
+                   {sellModal.rarity}
+                </p>
+                <p className="text-slate-500 mb-4">Quantity owned: {ownedAvatars[sellModal.id]}</p>
+                
+                <div className="mb-6 bg-slate-50 p-4 rounded-xl border border-slate-100">
+                  <div className="flex items-center justify-between mb-3">
+                    <label className="text-slate-600 font-bold text-sm">Amount to sell:</label>
+                    <div className="flex items-center gap-2">
+                      <button 
+                        onClick={() => setSellQuantity(ownedAvatars[sellModal.id] - 1)}
+                        disabled={ownedAvatars[sellModal.id] <= 1 || sellQuantity === ownedAvatars[sellModal.id] - 1}
+                        className={`px-2 py-1 text-xs font-bold rounded-lg transition-colors ${ownedAvatars[sellModal.id] <= 1 || sellQuantity === ownedAvatars[sellModal.id] - 1 ? 'bg-slate-200 text-slate-400 cursor-not-allowed' : 'bg-purple-100 text-purple-700 hover:bg-purple-200'}`}
+                      >
+                        Sell Extras
+                      </button>
+                      <input 
+                        type="number" 
+                        min="0" 
+                        max={ownedAvatars[sellModal.id]} 
+                        value={sellQuantity} 
+                        onChange={(e) => {
+                          if (e.target.value === '') {
+                            setSellQuantity('');
+                          } else {
+                            const val = parseInt(e.target.value, 10);
+                            setSellQuantity(Math.max(0, Math.min(ownedAvatars[sellModal.id], isNaN(val) ? 0 : val)));
+                          }
+                        }}
+                        className="w-16 text-center border border-slate-300 rounded-lg p-1 text-slate-700 font-bold focus:ring-2 focus:ring-red-400 outline-none"
+                      />
+                    </div>
+                  </div>
+                  <input 
+                    type="range" 
+                    min="0" 
+                    max={ownedAvatars[sellModal.id]} 
+                    value={sellQuantity || 0} 
+                    onChange={(e) => setSellQuantity(parseInt(e.target.value, 10))}
+                    className="w-full accent-red-500 cursor-pointer"
+                  />
+                </div>
+
+                {(() => {
+                  const cost = sellModal.cost !== undefined ? sellModal.cost : AVATAR_RARITIES[sellModal.rarity].cost;
+                  const q = typeof sellQuantity === 'number' ? sellQuantity : 0;
+                  return <p className="text-green-600 font-bold mb-8">Refund: +{Math.floor(cost / 2) * q} Gems</p>
+                })()}
+
+                <div className="flex gap-3 justify-center">
+                  <button onClick={() => setSellModal(null)} className="px-6 py-3 text-slate-600 font-bold bg-slate-100 hover:bg-slate-200 rounded-xl transition-colors w-full">Cancel</button>
+                  <button 
+                    onClick={confirmSell} 
+                    disabled={!sellQuantity || sellQuantity <= 0}
+                    className={`px-6 py-3 text-white font-bold rounded-xl transition-colors shadow-sm w-full ${(!sellQuantity || sellQuantity <= 0) ? 'bg-slate-300 cursor-not-allowed' : 'bg-red-500 hover:bg-red-600'}`}
+                  >
+                    Sell
+                  </button>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* Delete Set Modal */}
+          {setToDelete && (
+            <div className="fixed inset-0 bg-slate-900/40 backdrop-blur-sm flex items-center justify-center z-50 p-4" onClick={() => setSetToDelete(null)}>
+              <div className="bg-white rounded-2xl p-6 max-w-sm w-full shadow-xl" onClick={(e) => e.stopPropagation()}>
+                <div className="flex items-center gap-3 text-red-600 mb-4">
+                  <AlertTriangle size={24} />
+                  <h3 className="text-xl font-bold">Delete Set?</h3>
+                </div>
+                <p className="text-slate-600 mb-6">Are you sure you want to permanently delete this study set? This action cannot be undone.</p>
+                <div className="flex gap-3 justify-end">
+                  <button 
+                    onClick={() => setSetToDelete(null)}
+                    className="px-4 py-2 text-slate-600 font-medium hover:bg-slate-100 rounded-lg transition-colors"
+                  >
+                    Cancel
+                  </button>
+                  <button 
+                    onClick={confirmDelete}
+                    className="px-4 py-2 bg-red-600 text-white font-medium hover:bg-red-700 rounded-lg transition-colors shadow-sm"
+                  >
+                    Delete
+                  </button>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* Mode Toggle Bar */}
+          <div className="flex justify-center mb-4">
+            <div className="bg-slate-200/80 p-1 rounded-xl inline-flex shadow-inner">
+              <button
+                onClick={() => setDashboardMode('home')}
+                className={`px-6 py-1.5 rounded-lg text-sm font-bold transition-all duration-200 ${dashboardMode === 'home' ? 'bg-white text-indigo-700 shadow' : 'text-slate-500 hover:text-slate-700'}`}
+              >
+                Home
+              </button>
+              <button
+                onClick={() => setDashboardMode('sets')}
+                className={`px-6 py-1.5 rounded-lg text-sm font-bold transition-all duration-200 ${dashboardMode === 'sets' ? 'bg-white text-indigo-700 shadow' : 'text-slate-500 hover:text-slate-700'}`}
+              >
+                Sets
+              </button>
+              <button
+                onClick={() => setDashboardMode('avatars')}
+                className={`px-6 py-1.5 rounded-lg text-sm font-bold transition-all duration-200 ${dashboardMode === 'avatars' ? 'bg-white text-indigo-700 shadow' : 'text-slate-500 hover:text-slate-700'}`}
+              >
+                Avatars
+              </button>
+            </div>
+          </div>
+
+          {dashboardMode === 'home' && (
+            <div className="relative py-12 flex flex-col items-center justify-center min-h-[60vh] overflow-hidden -mx-4 px-4">
+              <style>{`
+                @keyframes scrollLeftToRight {
+                  0% { transform: translateX(-50%); }
+                  100% { transform: translateX(0%); }
+                }
+                @keyframes scrollRightToLeft {
+                  0% { transform: translateX(0%); }
+                  100% { transform: translateX(-50%); }
+                }
+                .animate-scroll-lr {
+                  display: flex;
+                  width: max-content;
+                  animation: scrollLeftToRight 50s linear infinite;
+                }
+                .animate-scroll-rl {
+                  display: flex;
+                  width: max-content;
+                  animation: scrollRightToLeft 50s linear infinite;
+                }
+              `}</style>
+              
+              {/* Top Marquee - Sets */}
+              <div className="absolute top-10 left-0 w-full overflow-hidden opacity-30 hover:opacity-80 transition-opacity duration-500 pointer-events-none">
+                 <div className="animate-scroll-lr gap-6">
+                    {[...INITIAL_SETS, ...INITIAL_SETS, ...INITIAL_SETS, ...INITIAL_SETS, ...INITIAL_SETS, ...INITIAL_SETS].map((set, i) => (
+                       <div key={i} className="bg-white rounded-2xl border border-slate-200 p-4 shadow-sm w-64 shrink-0">
+                         <span className="inline-block px-2.5 py-1 bg-indigo-50 text-indigo-700 text-[10px] font-extrabold uppercase tracking-wider rounded mb-2">
+                            {set.questions.length} Questions
+                         </span>
+                         <h3 className="text-sm font-bold text-slate-800 line-clamp-1">{set.title}</h3>
+                       </div>
+                    ))}
+                 </div>
+              </div>
+
+              {/* Hero Text */}
+              <div className="text-center z-10 relative px-4">
+                <h2 className="text-4xl sm:text-6xl font-black text-slate-800 mb-8 leading-[1.1] tracking-tight">
+                  The Easiest <br className="hidden sm:block" />
+                  <span className="bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent">Independent Studying</span> <br className="hidden sm:block" />
+                  App
+                </h2>
+                <div className="flex flex-col sm:flex-row gap-4 justify-center">
+                  <button 
+                    onClick={() => setDashboardMode('sets')} 
+                    className="px-8 py-4 bg-indigo-600 hover:bg-indigo-700 text-white rounded-2xl font-black text-lg shadow-lg transition-all hover:-translate-y-1 hover:shadow-xl"
+                  >
+                    Start Studying
+                  </button>
+                  <button 
+                    onClick={() => setDashboardMode('avatars')} 
+                    className="px-8 py-4 bg-white hover:bg-slate-50 text-indigo-600 border-2 border-indigo-100 hover:border-indigo-200 rounded-2xl font-black text-lg shadow-sm transition-all hover:-translate-y-1"
+                  >
+                    View Avatars
+                  </button>
+                </div>
+              </div>
+
+              {/* Bottom Marquee - Avatars */}
+              <div className="absolute bottom-10 left-0 w-full overflow-hidden opacity-30 hover:opacity-80 transition-opacity duration-500 pointer-events-none">
+                 <div className="animate-scroll-rl gap-6">
+                    {[...STORE_AVATARS.slice(0,10), ...STORE_AVATARS.slice(0,10), ...STORE_AVATARS.slice(0,10), ...STORE_AVATARS.slice(0,10)].map((avatar, i) => (
+                       <div key={i} className={`bg-white rounded-2xl border border-slate-200 p-4 shadow-sm w-32 shrink-0 flex flex-col items-center`}>
+                         <div className={`w-16 h-16 text-3xl flex items-center justify-center rounded-2xl ${avatar.color} border-2 ${avatar.border} mb-3`}>
+                            {avatar.emoji}
+                         </div>
+                         <h3 className="text-xs font-bold text-slate-800 truncate w-full text-center">{avatar.name}</h3>
+                       </div>
+                    ))}
+                 </div>
+              </div>
+            </div>
+          )}
+
+          {dashboardMode === 'sets' && (
+            <>
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                <div>
+                  <h2 className="text-2xl font-bold text-slate-800">Study Sets</h2>
+                  <p className="text-slate-500">Test your knowledge with default or custom sets.</p>
+                </div>
+                <button
+                  onClick={onCreateNew}
+                  className="flex items-center gap-2 bg-indigo-600 hover:bg-indigo-700 text-white px-5 py-2.5 rounded-xl font-medium transition-all shadow-sm hover:shadow active:scale-95"
+                >
+                  <Plus size={18} />
+                  Create New Set
+                </button>
+              </div>
+
+              <div className="border-b border-slate-200">
+                <div className="flex gap-8">
+                  <button
+                    onClick={() => setActiveTab('default')}
+                    className={`pb-3 font-semibold text-sm transition-colors border-b-2 ${activeTab === 'default' ? 'border-indigo-600 text-indigo-700' : 'border-transparent text-slate-500 hover:text-slate-800'}`}
+                  >
+                    Default sets
+                  </button>
+                  <button
+                    onClick={() => setActiveTab('my')}
+                    className={`pb-3 font-semibold text-sm transition-colors border-b-2 ${activeTab === 'my' ? 'border-indigo-600 text-indigo-700' : 'border-transparent text-slate-500 hover:text-slate-800'}`}
+                  >
+                    My sets
+                  </button>
+                </div>
+              </div>
+
+              {displayedSets.length === 0 ? (
+                <div className="text-center py-16 bg-white rounded-2xl border border-slate-200 border-dashed">
+                  <div className="bg-indigo-50 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4 text-indigo-500">
+                    <BookOpen size={28} />
+                  </div>
+                  <h3 className="text-lg font-semibold text-slate-700 mb-1">
+                    {activeTab === 'my' ? 'No custom sets yet' : 'No default sets'}
+                  </h3>
+                  <p className="text-slate-500 mb-6 max-w-sm mx-auto">
+                    {activeTab === 'my' ? "You haven't created any study sets. Click the button above to build your first one!" : "There are currently no default sets available."}
+                  </p>
+                  {activeTab === 'my' && (
+                    <button
+                      onClick={onCreateNew}
+                      className="text-indigo-600 font-medium hover:underline"
+                    >
+                      Get started &rarr;
+                    </button>
+                  )}
+                </div>
+              ) : (
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+                  {displayedSets.map(set => (
+                    <div key={set.id} className="bg-white rounded-2xl border border-slate-200 p-5 shadow-sm hover:shadow-md transition-shadow flex flex-col group relative overflow-hidden">
+                      <div className="absolute top-0 right-0 p-3 opacity-0 group-hover:opacity-100 transition-opacity flex gap-1.5">
+                        <button 
+                          onClick={(e) => { e.stopPropagation(); onViewSet(set); }}
+                          className="text-slate-400 hover:text-indigo-500 transition-colors p-1.5 bg-white/90 backdrop-blur rounded-md shadow-sm border border-slate-100"
+                          title="View set"
+                        >
+                          <Eye size={16} />
+                        </button>
+                        <button 
+                          onClick={(e) => { e.stopPropagation(); handleDuplicate(set); }}
+                          className="text-slate-400 hover:text-indigo-500 transition-colors p-1.5 bg-white/90 backdrop-blur rounded-md shadow-sm border border-slate-100"
+                          title="Duplicate set"
+                        >
+                          <Copy size={16} />
+                        </button>
+                        {!set.isDefault && (
+                          <>
+                            <button 
+                              onClick={(e) => { e.stopPropagation(); onEditSet(set); }}
+                              className="text-slate-400 hover:text-indigo-500 transition-colors p-1.5 bg-white/90 backdrop-blur rounded-md shadow-sm border border-slate-100"
+                              title="Edit set"
+                            >
+                              <Edit2 size={16} />
+                            </button>
+                            <button 
+                              onClick={(e) => { e.stopPropagation(); setSetToDelete(set.id); }}
+                              className="text-slate-400 hover:text-red-500 transition-colors p-1.5 bg-white/90 backdrop-blur rounded-md shadow-sm border border-slate-100"
+                              title="Delete set"
+                            >
+                              <Trash2 size={16} />
+                            </button>
+                          </>
+                        )}
+                      </div>
+                      <div className="mb-4">
+                        <span className="inline-block px-2.5 py-1 bg-indigo-50 text-indigo-700 text-xs font-semibold rounded-md mb-3">
+                          {set.questions.length} {set.questions.length === 1 ? 'Question' : 'Questions'}
+                        </span>
+                        <h3 className="text-lg font-bold text-slate-800 line-clamp-2 leading-tight">{set.title}</h3>
+                      </div>
+                      <div className="mt-auto pt-4 border-t border-slate-100">
+                        <button
+                          onClick={() => onStartStudy(set)}
+                          className="w-full flex items-center justify-center gap-2 bg-slate-50 hover:bg-indigo-50 text-indigo-700 font-medium py-2 rounded-xl transition-colors border border-slate-200 hover:border-indigo-200"
+                        >
+                          <Play size={16} />
+                          Study Now
+                        </button>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </>
+          )}
+
+          {dashboardMode === 'avatars' && (
+            <div className="space-y-4">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                <div>
+                  <h2 className="text-2xl font-bold text-slate-800">Avatars</h2>
+                  <p className="text-slate-500">Collect and customize your profile avatars.</p>
+                </div>
+              </div>
+
+              <div className="border-b border-slate-200">
+                <div className="flex gap-8">
+                  <button
+                    onClick={() => setAvatarTab('my')}
+                    className={`pb-3 font-semibold text-sm transition-colors border-b-2 ${avatarTab === 'my' ? 'border-indigo-600 text-indigo-700' : 'border-transparent text-slate-500 hover:text-slate-800'}`}
+                  >
+                    My Avatars
+                  </button>
+                  <button
+                    onClick={() => setAvatarTab('getMore')}
+                    className={`pb-3 font-semibold text-sm transition-colors border-b-2 ${avatarTab === 'getMore' ? 'border-indigo-600 text-indigo-700' : 'border-transparent text-slate-500 hover:text-slate-800'}`}
+                  >
+                    Get More
+                  </button>
+                </div>
+              </div>
+
+              <div className="pt-2">
+                {avatarTab === 'my' ? (
+                  <>
+                    {/* Avatar Score Dashboard */}
+                    <div className="bg-white rounded-3xl border border-slate-200 p-6 sm:p-8 shadow-sm mb-8 relative overflow-hidden">
+                      <div className="absolute -right-10 -top-10 text-9xl opacity-5 mix-blend-multiply pointer-events-none">
+                        <Trophy size={160} />
+                      </div>
+                      <div className="flex items-center justify-between mb-2 relative z-10">
+                        <h3 className="text-xl font-bold text-slate-500 uppercase tracking-wider">Avatar Score</h3>
+                        <div className="flex items-center gap-3">
+                          <button 
+                            onClick={() => setScoreDetailsExpanded(!scoreDetailsExpanded)}
+                            className="text-xs font-bold text-slate-400 hover:text-indigo-600 transition-colors uppercase tracking-wider"
+                          >
+                            {scoreDetailsExpanded ? 'Minimize' : 'See More'}
+                          </button>
+                          <div className={`px-4 py-1.5 rounded-full font-bold text-sm border-2 ${tierStyles} shadow-sm`}>
+                            {tierName}
+                          </div>
+                        </div>
+                      </div>
+                      <div className={`text-6xl font-black text-slate-800 relative z-10 ${scoreDetailsExpanded ? 'mb-8' : ''}`}>{avatarScore}</div>
+                      
+                      {scoreDetailsExpanded && (
+                        <div className="relative z-10">
+                          <div className="bg-slate-50 rounded-2xl p-5 border border-slate-100 mb-6">
+                            <h4 className="text-sm font-bold text-slate-500 mb-3 uppercase tracking-wider">Unique Avatars Owned</h4>
+                            <div className="grid grid-cols-2 sm:grid-cols-5 gap-3">
+                              <div className="bg-white rounded-xl p-3 border border-slate-200 text-center shadow-sm">
+                                <div className="text-[10px] sm:text-xs font-bold text-slate-500 uppercase">Common</div>
+                                <div className="text-2xl font-black text-slate-700">{rarityCounts.Common}</div>
+                              </div>
+                              <div className="bg-white rounded-xl p-3 border border-blue-200 text-center shadow-sm">
+                                <div className="text-[10px] sm:text-xs font-bold text-blue-500 uppercase">Rare</div>
+                                <div className="text-2xl font-black text-blue-700">{rarityCounts.Rare}</div>
+                              </div>
+                              <div className="bg-white rounded-xl p-3 border border-purple-200 text-center shadow-sm">
+                                <div className="text-[10px] sm:text-xs font-bold text-purple-500 uppercase">Epic</div>
+                                <div className="text-2xl font-black text-purple-700">{rarityCounts.Epic}</div>
+                              </div>
+                              <div className="bg-white rounded-xl p-3 border border-amber-200 text-center shadow-sm">
+                                <div className="text-[10px] sm:text-xs font-bold text-amber-500 uppercase">Legendary</div>
+                                <div className="text-2xl font-black text-amber-700">{rarityCounts.Legendary}</div>
+                              </div>
+                              <div className="bg-white rounded-xl p-3 border border-red-200 text-center shadow-sm col-span-2 sm:col-span-1">
+                                <div className="text-[10px] sm:text-xs font-bold text-red-500 uppercase">Mythic</div>
+                                <div className="text-2xl font-black text-red-700">{rarityCounts.Mythic}</div>
+                              </div>
+                            </div>
+                          </div>
+
+                          <div className="flex flex-col sm:flex-row gap-4 divide-y sm:divide-y-0 sm:divide-x divide-slate-200 border-t border-slate-100 pt-4">
+                            <div className="flex-1 flex justify-between items-center sm:pr-4 pt-2 sm:pt-0">
+                              <span className="text-slate-500 font-bold">Packs Maxed</span>
+                              <span className="text-xl font-black text-indigo-600">{completedPacksCount}</span>
+                            </div>
+                            <div className="flex-1 flex justify-between items-center sm:pl-4 pt-4 sm:pt-0">
+                              <span className="text-slate-500 font-bold">Total Collection Value</span>
+                              <span className="text-xl font-black text-purple-600 flex items-center gap-1"><Gem size={18} className="fill-purple-300 text-purple-500"/> {totalSellValue}</span>
+                            </div>
+                          </div>
+                        </div>
+                      )}
+                    </div>
+
+                    <div className="space-y-6">
+                      {myAvatarsSections.map(section => {
+                        const isExpanded = expandedAvatarSections[section.id];
+                        return (
+                          <div key={section.id} className="bg-white rounded-2xl border border-slate-200 overflow-hidden shadow-sm hover:shadow-md transition-shadow">
+                            <div 
+                              className="flex items-center justify-between p-5 cursor-pointer bg-white transition-colors"
+                              onClick={() => toggleAvatarSection(section.id)}
+                            >
+                              <h3 className="text-lg font-bold text-slate-800 flex items-center">
+                                {section.title} 
+                                {section.isPack && (
+                                  <span className="text-slate-400 text-sm ml-2 font-semibold">({section.ownedCount}/{section.total})</span>
+                                )}
+                              </h3>
+                              <div className="text-slate-400 bg-slate-50 p-1.5 rounded-lg">
+                                {isExpanded ? <ChevronUp size={18} /> : <ChevronDown size={18} />}
+                              </div>
+                            </div>
+
+                            {isExpanded && (
+                              <div className="p-5 pt-0 border-t border-slate-100 bg-slate-50/50">
+                                {section.items.length === 0 && section.isPack ? (
+                                  <div className="text-center py-10 bg-white rounded-xl border border-slate-200 border-dashed mt-5">
+                                    <h3 className="text-slate-700 font-semibold mb-1">No avatars owned</h3>
+                                    <p className="text-slate-500 text-sm">You don't own any avatars from this pack.</p>
+                                    <button onClick={() => setAvatarTab('getMore')} className="mt-3 text-indigo-600 font-bold text-sm hover:text-indigo-800 flex items-center gap-1 mx-auto">
+                                      Get More <ArrowLeft size={14} className="rotate-180" />
+                                    </button>
+                                  </div>
+                                ) : (
+                                  <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4 mt-5">
+                                    {section.items.map(avatar => {
+                                      const isSeasonal = !!avatar.months;
+                                      const isMoon = avatar.group === 'Moon';
+                                      const hasBanner = isSeasonal || isMoon;
+                                      return (
+                                        <div key={`${section.title}-${avatar.id}`} className={`bg-white rounded-2xl border border-slate-200 shadow-sm hover:shadow-md transition-shadow flex flex-col items-center relative overflow-hidden ${hasBanner ? 'pt-8 pb-5 px-5' : 'p-5'}`}>
+                                          {isSeasonal && !isMoon && (
+                                            <div className="absolute top-0 left-0 w-full bg-purple-500 text-white text-[10px] font-extrabold uppercase tracking-widest py-1 text-center shadow-sm">
+                                              Seasonal
+                                            </div>
+                                          )}
+                                          {isMoon && (
+                                            <div className="absolute top-0 left-0 w-full bg-slate-900 text-white text-[10px] font-extrabold uppercase tracking-widest py-1 text-center shadow-sm">
+                                              MOON
+                                            </div>
+                                          )}
+                                          <div className={`w-20 h-20 sm:w-24 sm:h-24 text-4xl sm:text-5xl flex items-center justify-center rounded-2xl ${avatar.color} border-2 ${avatar.border} mb-4 shadow-inner`}>
+                                            {avatar.emoji}
+                                          </div>
+                                          <h3 className="text-lg font-bold text-slate-800 mb-1 text-center">{avatar.name}</h3>
+                                          <p className={`text-xs font-bold uppercase tracking-wider mb-2 ${AVATAR_RARITIES[avatar.rarity].labelColor}`}>
+                                             {avatar.rarity}
+                                          </p>
+                                          <p className="text-sm font-bold text-slate-500 mb-4">Owned: {ownedAvatars[avatar.id]}</p>
+                                          <div className="flex flex-col gap-2 w-full mt-auto">
+                                            {equippedAvatar === avatar.id ? (
+                                              <button className="w-full bg-green-500 text-white font-bold py-2.5 rounded-xl shadow-sm text-sm">
+                                                Equipped
+                                              </button>
+                                            ) : (
+                                              <button 
+                                                onClick={() => setEquippedAvatar(avatar.id)} 
+                                                className="w-full bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold py-2.5 rounded-xl transition-colors text-sm"
+                                              >
+                                                Equip
+                                              </button>
+                                            )}
+                                            {avatar.sellable !== false && (
+                                              <button 
+                                                onClick={() => handleOpenSellModal(avatar)} 
+                                                className="w-full border-2 border-red-100 text-red-500 hover:bg-red-50 font-bold py-2 rounded-xl transition-colors text-sm"
+                                              >
+                                                Sell
+                                              </button>
+                                            )}
+                                          </div>
+                                        </div>
+                                      );
+                                    })}
+                                  </div>
+                                )}
+                              </div>
+                            )}
+                          </div>
+                        );
+                      })}
+                    </div>
+                  </>
+                ) : (
+                  <div className="space-y-8">
+                    {/* Packs Section */}
+                    <div>
+                      <div className="flex flex-col sm:flex-row sm:items-center justify-between border-b pb-3 mb-5 gap-3">
+                        <h3 className="text-lg font-bold text-slate-800">Packs</h3>
+                        <div className="flex items-center gap-4">
+                          {/* 1x / 5x Toggle */}
+                          <div className="bg-slate-200/80 p-0.5 rounded-lg inline-flex shadow-inner">
+                            <button
+                              onClick={() => setPackAmount(1)}
+                              className={`px-3 py-1 rounded-md text-xs font-bold transition-all duration-200 ${packAmount === 1 ? 'bg-white text-indigo-700 shadow' : 'text-slate-500 hover:text-slate-700'}`}
+                            >
+                              1x
+                            </button>
+                            <button
+                              onClick={() => setPackAmount(5)}
+                              className={`px-3 py-1 rounded-md text-xs font-bold transition-all duration-200 ${packAmount === 5 ? 'bg-white text-indigo-700 shadow' : 'text-slate-500 hover:text-slate-700'}`}
+                            >
+                              5x
+                            </button>
+                          </div>
+
+                          <div className="flex items-center gap-2 text-sm font-medium text-slate-600">
+                            <input 
+                              type="checkbox" 
+                              id="instantOpen" 
+                              checked={instantOpen} 
+                              onChange={(e) => setInstantOpen(e.target.checked)}
+                              className="w-4 h-4 text-purple-600 rounded border-slate-300 focus:ring-purple-500 cursor-pointer"
+                            />
+                            <label htmlFor="instantOpen" className="cursor-pointer select-none">Instant Open</label>
+                          </div>
+                        </div>
+                      </div>
+                      <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
+                        {STORE_PACKS.map(pack => (
+                          <div key={pack.id} className="bg-white rounded-2xl border border-slate-200 shadow-sm hover:shadow-md transition-shadow flex flex-col items-center overflow-hidden relative pt-8 pb-5 px-5">
+                            <div className="absolute top-0 left-0 w-full bg-red-500 text-white text-[10px] font-extrabold uppercase tracking-widest py-1 text-center shadow-sm">
+                              Pack
+                            </div>
+                            <div className={`w-20 h-20 sm:w-24 sm:h-24 text-4xl sm:text-5xl flex items-center justify-center rounded-2xl ${pack.color} border-2 ${pack.border} mb-4 shadow-inner`}>
+                              {pack.emoji}
+                            </div>
+                            <h3 className="text-lg font-bold text-slate-800 mb-4 text-center leading-tight">{pack.name}</h3>
+                            <div className="mt-auto w-full flex justify-center">
+                              <button 
+                                onClick={() => handlePackClick(pack)} 
+                                className="flex items-center justify-center gap-1.5 w-full bg-purple-100 hover:bg-purple-200 text-purple-700 font-bold py-2.5 rounded-xl transition-colors shadow-sm"
+                              >
+                                <Gem size={18} className="fill-purple-300" /> {pack.cost * packAmount}
+                              </button>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+
+                    {/* Individual Avatars Section */}
+                    <div>
+                      <h3 className="text-lg font-bold text-slate-800 mb-4 border-b pb-2">Individuals</h3>
+                      <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
+                        {STORE_AVATARS.filter(a => {
+                          if (a.unbuyable || a.pack) return false;
+                          if (a.months && !a.months.includes(currentMonth)) return false;
+                          if (a.group === 'Moon' && a.id !== currentMoonPhaseId) return false;
+                          return true;
+                        }).map(avatar => {
+                          const isOwned = ownedAvatars[avatar.id] > 0;
+                          const cost = avatar.cost !== undefined ? avatar.cost : AVATAR_RARITIES[avatar.rarity].cost;
+                          const isSeasonal = !!avatar.months;
+                          const isMoon = avatar.group === 'Moon';
+                          const hasBanner = isSeasonal || isMoon;
+                          return (
+                            <div key={avatar.id} className={`bg-white rounded-2xl border border-slate-200 shadow-sm hover:shadow-md transition-shadow flex flex-col items-center relative overflow-hidden ${hasBanner ? 'pt-8 pb-5 px-5' : 'p-5'}`}>
+                              {isSeasonal && !isMoon && (
+                                <div className="absolute top-0 left-0 w-full bg-purple-500 text-white text-[10px] font-extrabold uppercase tracking-widest py-1 text-center shadow-sm">
+                                  Seasonal
+                                </div>
+                              )}
+                              {isMoon && (
+                                <div className="absolute top-0 left-0 w-full bg-slate-900 text-white text-[10px] font-extrabold uppercase tracking-widest py-1 text-center shadow-sm">
+                                  MOON
+                                </div>
+                              )}
+                              <div className={`w-20 h-20 sm:w-24 sm:h-24 text-4xl sm:text-5xl flex items-center justify-center rounded-2xl ${avatar.color} border-2 ${avatar.border} mb-4 shadow-inner ${isOwned ? 'opacity-70' : ''}`}>
+                                {avatar.emoji}
+                              </div>
+                              <h3 className="text-lg font-bold text-slate-800 mb-1 text-center">
+                                {avatar.name}
+                              </h3>
+                              <p className={`text-xs font-bold uppercase tracking-wider mb-4 ${AVATAR_RARITIES[avatar.rarity].labelColor}`}>
+                                 {avatar.rarity}
+                              </p>
+                              <div className="mt-auto w-full flex justify-center">
+                                {isOwned ? (
+                                  <div className="py-2.5 text-green-500 font-extrabold tracking-wide">
+                                    Owned
+                                  </div>
+                                ) : (
+                                  <button 
+                                    onClick={() => setBuyModal(avatar)} 
+                                    className="flex items-center justify-center gap-1.5 w-full bg-purple-100 hover:bg-purple-200 text-purple-700 font-bold py-2.5 rounded-xl transition-colors shadow-sm"
+                                  >
+                                    <Gem size={18} className="fill-purple-300" /> {cost}
+                                  </button>
+                                )}
+                              </div>
+                            </div>
+                          );
+                        })}
+                      </div>
+                    </div>
+                  </div>
+                )}
+              </div>
+            </div>
+          )}
+        </div>
+      );
+    }
+
+    // ==========================================
+    // VIEW: CREATE SET
+    // ==========================================
+    function CreateSet({ initialData, onSave, onCancel }) {
+      const [title, setTitle] = useState(initialData ? initialData.title : '');
+      const [questions, setQuestions] = useState(initialData ? initialData.questions : [
+        { id: Date.now().toString(), text: '', options: ['', ''], correctIndices: [0], scrambleAnswers: true }
+      ]);
+      const [error, setError] = useState('');
+
+      const addQuestion = () => {
+        setQuestions([
+          ...questions,
+          { id: Date.now().toString(), text: '', options: ['', ''], correctIndices: [0], scrambleAnswers: true }
+        ]);
+      };
+
+      const updateQuestion = (id, field, value) => {
+        setQuestions(questions.map(q => q.id === id ? { ...q, [field]: value } : q));
+      };
+
+      const removeQuestion = (id) => {
+        setQuestions(questions.filter(q => q.id !== id));
+      };
+
+      const updateOption = (qId, optionIndex, value) => {
+        setQuestions(questions.map(q => {
+          if (q.id === qId) {
+            const newOptions = [...q.options];
+            newOptions[optionIndex] = value;
+            return { ...q, options: newOptions };
+          }
+          return q;
+        }));
+      };
+
+      const addOption = (qId) => {
+        setQuestions(questions.map(q => {
+          if (q.id === qId && q.options.length < 4) {
+            return { ...q, options: [...q.options, ''] };
+          }
+          return q;
+        }));
+      };
+
+      const removeOption = (qId, optionIndex) => {
+        setQuestions(questions.map(q => {
+          if (q.id === qId && q.options.length > 2) {
+            const newOptions = q.options.filter((_, idx) => idx !== optionIndex);
+            
+            let newCorrectIndices = q.correctIndices
+              .filter(idx => idx !== optionIndex) 
+              .map(idx => idx > optionIndex ? idx - 1 : idx); 
+
+            if (newCorrectIndices.length === 0) {
+               newCorrectIndices = [0];
+            }
+
+            return { ...q, options: newOptions, correctIndices: newCorrectIndices };
+          }
+          return q;
+        }));
+      };
+
+      const toggleCorrectIndex = (qId, optIndex) => {
+        setQuestions(questions.map(q => {
+          if (q.id === qId) {
+            let newIndices = [...q.correctIndices];
+            if (newIndices.includes(optIndex)) {
+              newIndices = newIndices.filter(i => i !== optIndex);
+            } else {
+              newIndices.push(optIndex);
+            }
+            return { ...q, correctIndices: newIndices };
+          }
+          return q;
+        }));
+      };
+
+      const toggleScramble = (qId) => {
+        setQuestions(questions.map(q => {
+          if (q.id === qId) {
+            return { ...q, scrambleAnswers: q.scrambleAnswers === false ? true : false };
+          }
+          return q;
+        }));
+      };
+
+      const handleSave = () => {
+        if (!title.trim()) {
+          setError('Please provide a title for your set.');
+          return;
+        }
+        if (questions.length === 0) {
+          setError('You must add at least one question.');
+          return;
+        }
+        
+        for (let i = 0; i < questions.length; i++) {
+          const q = questions[i];
+          if (!q.text.trim()) {
+            setError(`Question ${i + 1} is missing text.`);
+            return;
+          }
+          if (q.correctIndices.length === 0) {
+            setError(`Question ${i + 1} must have at least one correct answer selected.`);
+            return;
+          }
+          for (let j = 0; j < q.options.length; j++) {
+            if (!q.options[j].trim()) {
+              setError(`An option in Question ${i + 1} is empty.`);
+              return;
+            }
+          }
+        }
+
+        onSave({
+          id: initialData ? initialData.id : Date.now().toString(),
+          title: title.trim(),
+          isDefault: false, 
+          questions: questions.map(q => ({
+            ...q,
+            text: q.text.trim(),
+            options: q.options.map(opt => opt.trim()),
+            scrambleAnswers: q.scrambleAnswers !== false
+          }))
+        });
+      };
+
+      return (
+        <div className="max-w-3xl mx-auto">
+          <div className="flex items-center justify-between mb-6">
+            <button onClick={onCancel} className="flex items-center gap-2 text-slate-500 hover:text-slate-800 transition-colors">
+              <ArrowLeft size={18} /> Back
+            </button>
+            <button 
+              onClick={handleSave}
+              className="flex items-center gap-2 bg-indigo-600 hover:bg-indigo-700 text-white px-5 py-2 rounded-xl font-medium transition-all shadow-sm active:scale-95"
+            >
+              <Save size={18} /> {initialData ? 'Update Set' : 'Save Set'}
+            </button>
+          </div>
+
+          <div className="bg-white rounded-2xl shadow-sm border border-slate-200 p-6 mb-6">
+            <label className="block text-sm font-semibold text-slate-700 mb-2">Set Title</label>
+            <input 
+              type="text"
+              value={title}
+              onChange={(e) => setTitle(e.target.value)}
+              placeholder="e.g., Biology Chapter 4 Review"
+              className="w-full text-lg px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:bg-white transition-all placeholder:text-slate-400"
+            />
+          </div>
+
+          {error && (
+            <div className="mb-6 p-4 bg-red-50 text-red-700 border border-red-200 rounded-xl flex items-center gap-3 font-medium">
+              <AlertCircle size={20} className="shrink-0" />
+              {error}
+            </div>
+          )}
+
+          <div className="space-y-6">
+            {questions.map((q, qIndex) => (
+              <div key={q.id} className="bg-white rounded-2xl shadow-sm border border-slate-200 p-6 relative overflow-hidden">
+                <div className="flex justify-between items-start mb-4">
+                  <h3 className="text-lg font-bold text-slate-800">Question {qIndex + 1}</h3>
+                  {questions.length > 1 && (
+                    <button 
+                      onClick={() => removeQuestion(q.id)}
+                      className="text-slate-400 hover:text-red-500 transition-colors p-2 -mr-2"
+                      title="Remove question"
+                    >
+                      <Trash2 size={18} />
+                    </button>
+                  )}
+                </div>
+
+                <textarea
+                  value={q.text}
+                  onChange={(e) => updateQuestion(q.id, 'text', e.target.value)}
+                  placeholder="Type your question here..."
+                  className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:bg-white transition-all resize-none min-h-[100px] mb-5 placeholder:text-slate-400"
+                />
+
+                <div className="space-y-3">
+                  <label className="block text-sm font-semibold text-slate-700">Answers (Check all that are correct)</label>
+                  {q.options.map((opt, optIndex) => (
+                    <div key={optIndex} className={`flex items-center gap-3 p-2 rounded-xl border ${q.correctIndices.includes(optIndex) ? 'border-green-400 bg-green-50' : 'border-slate-200 bg-white'} transition-colors`}>
+                      <div className="flex-shrink-0 pl-2 flex items-center">
+                        <input
+                          type="checkbox"
+                          checked={q.correctIndices.includes(optIndex)}
+                          onChange={() => toggleCorrectIndex(q.id, optIndex)}
+                          className="w-5 h-5 text-indigo-600 rounded border-slate-300 focus:ring-indigo-500 cursor-pointer"
+                        />
+                      </div>
+                      <input
+                        type="text"
+                        value={opt}
+                        onChange={(e) => updateOption(q.id, optIndex, e.target.value)}
+                        placeholder={`Answer option ${optIndex + 1}`}
+                        className="w-full bg-transparent border-none focus:ring-0 p-2 outline-none"
+                      />
+                      {q.options.length > 2 && (
+                        <button 
+                          onClick={() => removeOption(q.id, optIndex)}
+                          className="text-slate-400 hover:text-red-500 pr-2 transition-colors"
+                          title="Remove option"
+                        >
+                          <XCircle size={18} />
+                        </button>
+                      )}
+                    </div>
+                  ))}
+                </div>
+
+                {q.options.length < 4 && (
+                  <button 
+                    onClick={() => addOption(q.id)}
+                    className="mt-4 flex items-center gap-1.5 text-sm font-medium text-indigo-600 hover:text-indigo-800 transition-colors"
+                  >
+                    <Plus size={16} /> Add another option
+                  </button>
+                )}
+
+                <div className="mt-5 pt-4 border-t border-slate-100 flex items-center gap-2 text-sm font-medium text-slate-600">
+                  <input
+                    type="checkbox"
+                    id={`scramble-${q.id}`}
+                    checked={q.scrambleAnswers !== false}
+                    onChange={() => toggleScramble(q.id)}
+                    className="w-4 h-4 text-indigo-600 rounded border-slate-300 focus:ring-indigo-500 cursor-pointer"
+                  />
+                  <label htmlFor={`scramble-${q.id}`} className="cursor-pointer select-none">
+                    Scramble answer order when studying this question
+                  </label>
+                </div>
+              </div>
+            ))}
+          </div>
+
+          <button 
+            onClick={addQuestion}
+            className="mt-6 w-full py-4 border-2 border-dashed border-slate-300 rounded-2xl text-slate-500 font-semibold flex items-center justify-center gap-2 hover:bg-slate-50 hover:border-indigo-400 hover:text-indigo-600 transition-all"
+          >
+            <Plus size={20} /> Add New Question
+          </button>
+        </div>
+      );
+    }
+
+    // ==========================================
+    // VIEW: STUDY MODE & MINI-GAME
+    // ==========================================
+
+    function FlappyMiniGame({ avatarId, onComplete }) {
+      const avatar = STORE_AVATARS.find(a => a.id === avatarId) || STORE_AVATARS[STORE_AVATARS.length - 1];
+      const [gameOver, setGameOver] = useState(false);
+      const [score, setScore] = useState(0);
+      const [started, setStarted] = useState(false);
+      const [livesUI, setLivesUI] = useState(3);
+      const [_, setForceRender] = useState(0);
+
+      const canvasW = 400;
+      const canvasH = 500;
+      const birdSize = 40;
+      const pipeWidth = 60;
+      const gapSize = 150;
+
+      const stateRef = useRef({
+        birdY: canvasH / 2,
+        birdV: 0,
+        pipes: [],
+        score: 0,
+        frames: 0,
+        lives: 3
+      });
+
+      const jump = () => {
+        if (!started) setStarted(true);
+        if (gameOver) return;
+        stateRef.current.birdV = -8;
+      };
+
+      useEffect(() => {
+        const handleKeyDown = (e) => {
+          if (e.code === 'Space') {
+            e.preventDefault();
+            jump();
+          }
+        };
+        window.addEventListener('keydown', handleKeyDown);
+        return () => window.removeEventListener('keydown', handleKeyDown);
+      }, [started, gameOver]);
+
+      useEffect(() => {
+        if (!started || gameOver) return;
+
+        let animationId;
+        const loop = () => {
+          const s = stateRef.current;
+          s.birdV += 0.5; // Gravity
+          s.birdY += s.birdV;
+
+          // Move pipes
+          s.pipes.forEach(p => {
+            p.x -= 3;
+          });
+
+          // Remove off-screen pipes
+          if (s.pipes.length > 0 && s.pipes[0].x < -pipeWidth) {
+            s.pipes.shift();
+          }
+
+          // Score
+          s.pipes.forEach(p => {
+            if (!p.passed && p.x + pipeWidth < 50) {
+              p.passed = true;
+              s.score += 1;
+              setScore(s.score);
+            }
+          });
+
+          // Spawn pipes
+          s.frames++;
+          if (s.frames % 100 === 0 || s.pipes.length === 0) {
+            const minHeight = 50;
+            const maxHeight = canvasH - gapSize - minHeight;
+            const topHeight = Math.floor(Math.random() * (maxHeight - minHeight + 1) + minHeight);
+            
+            if (s.pipes.length === 0 || s.pipes[s.pipes.length - 1].x < canvasW - 200) {
+              s.pipes.push({ x: canvasW, topHeight, passed: false });
+            }
+          }
+
+          // Collision Detection
+          const birdBox = { left: 50 + 5, right: 50 + birdSize - 5, top: s.birdY + 5, bottom: s.birdY + birdSize - 5 };
+          let hit = false;
+          
+          if (birdBox.bottom >= canvasH || birdBox.top <= 0) hit = true;
+          
+          s.pipes.forEach(p => {
+            if (birdBox.right > p.x && birdBox.left < p.x + pipeWidth) {
+              if (birdBox.top < p.topHeight || birdBox.bottom > p.topHeight + gapSize) {
+                hit = true;
+              }
+            }
+          });
+
+          if (hit) {
+            s.lives -= 1;
+            setLivesUI(s.lives);
+            if (s.lives <= 0) {
+              setGameOver(true);
+            } else {
+              s.birdY = canvasH / 2;
+              s.birdV = 0;
+              s.pipes = [];
+              setStarted(false);
+              setForceRender(prev => prev + 1); 
+              return; 
+            }
+          } else {
+            setForceRender(prev => prev + 1);
+            animationId = requestAnimationFrame(loop);
+          }
+        };
+        
+        animationId = requestAnimationFrame(loop);
+        return () => cancelAnimationFrame(animationId);
+      }, [started, gameOver]);
+
+      const s = stateRef.current;
+
+      return (
+        <div 
+          className="relative w-full max-w-[400px] mx-auto h-[500px] bg-sky-300 overflow-hidden rounded-3xl border-4 border-slate-300 shadow-inner cursor-pointer" 
+          onMouseDown={jump}
+          onTouchStart={jump}
+        >
+          <div className="absolute bottom-0 w-full h-12 bg-green-400 border-t-4 border-green-600 z-10"></div>
+          <div className="absolute bottom-12 w-full h-4 bg-green-300 z-0"></div>
+          
+          <div className="absolute top-4 left-4 flex gap-1 z-30">
+            {[...Array(3)].map((_, i) => (
+              <Heart key={i} size={24} className={i < livesUI ? "text-red-500 fill-red-500" : "text-slate-400/50 fill-slate-300/50"} />
+            ))}
+          </div>
+
+          <div 
+            style={{ 
+              position: 'absolute', top: s.birdY, left: 50, width: birdSize, height: birdSize, 
+              transform: `rotate(${Math.min(s.birdV * 3, 90)}deg)` 
+            }} 
+            className={`flex items-center justify-center text-3xl select-none z-20 rounded-xl ${avatar.color} border-2 ${avatar.border} shadow-sm transition-transform duration-75`}
+          >
+            {avatar.emoji}
+          </div>
+
+          {s.pipes.map((p, i) => (
+            <React.Fragment key={i}>
+              <div style={{ position: 'absolute', left: p.x, top: 0, width: pipeWidth, height: p.topHeight }} className="bg-green-500 border-x-4 border-b-4 border-green-700 z-10" />
+              <div style={{ position: 'absolute', left: p.x, top: p.topHeight + gapSize, width: pipeWidth, bottom: 0 }} className="bg-green-500 border-x-4 border-t-4 border-green-700 z-10" />
+            </React.Fragment>
+          ))}
+
+          {!started && !gameOver && (
+            <div className="absolute inset-0 flex flex-col items-center justify-center bg-black/30 z-30 pointer-events-none">
+              <p className="text-white font-bold text-2xl mb-2 text-center drop-shadow-md">Flappy Avatar</p>
+              <p className="text-white font-medium text-lg text-center drop-shadow-md">Click or Press Space to Jump!</p>
+            </div>
+          )}
+          
+          {gameOver && (
+            <div className="absolute inset-0 flex flex-col items-center justify-center bg-black/60 z-40" onClick={(e) => e.stopPropagation()}>
+              <div className="bg-white p-8 rounded-3xl text-center shadow-2xl scale-110">
+                <h3 className="text-3xl font-black text-slate-800 mb-2">Game Over!</h3>
+                <p className="text-xl text-slate-600 font-bold mb-6">Score: {score}</p>
+                <button 
+                  onClick={onComplete} 
+                  className="px-6 py-3 bg-indigo-600 text-white rounded-xl font-bold shadow-sm hover:bg-indigo-700 transition-colors w-full"
+                >
+                  Continue Studying
+                </button>
+              </div>
+            </div>
+          )}
+
+          <div className="absolute top-6 w-full text-center pointer-events-none z-30">
+             <span className="text-5xl font-black text-white drop-shadow-lg" style={{ textShadow: '2px 2px 0 #000, -2px -2px 0 #000, 2px -2px 0 #000, -2px 2px 0 #000' }}>
+               {score}
+             </span>
+          </div>
+        </div>
+      );
+    }
+
+
+    function StudyMode({ activeSet, equippedAvatar, onComplete, onCancel, minigameDisabled, setMinigameDisabled }) {
+      const [roundPool, setRoundPool] = useState(() => activeSet.questions.map(q => q.id));
+      const [currentQuestion, setCurrentQuestion] = useState(() => {
+        const randomIndex = Math.floor(Math.random() * activeSet.questions.length);
+        return activeSet.questions[randomIndex];
+      });
+      const [questionsAnswered, setQuestionsAnswered] = useState(0);
+      const [score, setScore] = useState(0);
+      const [streak, setStreak] = useState(0);
+      const [selectedOption, setSelectedOption] = useState(null);
+      const [isAnswered, setIsAnswered] = useState(false);
+      
+      const [shouldPlayMinigame, setShouldPlayMinigame] = useState(false);
+      const [showStreakModal, setShowStreakModal] = useState(false);
+      const [isPlayingFlappy, setIsPlayingFlappy] = useState(false);
+      
+      const [questionStats, setQuestionStats] = useState({});
+      const [lastPointsEarned, setLastPointsEarned] = useState(0);
+      
+      const [displayOptions, setDisplayOptions] = useState([]);
+
+      useEffect(() => {
+        let opts = currentQuestion.options.map((text, idx) => ({ text, originalIndex: idx }));
+        if (currentQuestion.scrambleAnswers !== false) {
+          for (let i = opts.length - 1; i > 0; i--) {
+            const j = Math.floor(Math.random() * (i + 1));
+            [opts[i], opts[j]] = [opts[j], opts[i]];
+          }
+        }
+        setDisplayOptions(opts);
+      }, [currentQuestion]);
+      
+      const isCorrect = isAnswered && currentQuestion.correctIndices.includes(selectedOption);
+
+      const handleSelect = (index) => {
+        if (isAnswered) return;
+        
+        setSelectedOption(index);
+        setIsAnswered(true);
+
+        const ansIsCorrect = currentQuestion.correctIndices.includes(index);
+        const stats = questionStats[currentQuestion.id] || { wrongCount: 0, hasBeenCorrect: false };
+        let earnedPoints = 0;
+
+        if (ansIsCorrect) {
+          setStreak(prev => {
+            const next = prev + 1;
+            if (next === 10 && !minigameDisabled) setShouldPlayMinigame(true);
+            return next;
+          });
+          if (stats.wrongCount > 0 && !stats.hasBeenCorrect) {
+            earnedPoints = 7; 
+          } else {
+            earnedPoints = 5;
+          }
+          setQuestionStats(prev => ({
+            ...prev,
+            [currentQuestion.id]: { ...stats, hasBeenCorrect: true }
+          }));
+        } else {
+          setStreak(0);
+          earnedPoints = -1;
+          setQuestionStats(prev => ({
+            ...prev,
+            [currentQuestion.id]: { ...stats, wrongCount: stats.wrongCount + 1 }
+          }));
+        }
+        
+        setLastPointsEarned(earnedPoints);
+        setScore(prev => Math.max(-2, prev + earnedPoints));
+      };
+
+      const loadNextQuestion = () => {
+        setQuestionsAnswered(prev => prev + 1);
+
+        const wasCorrect = currentQuestion.correctIndices.includes(selectedOption);
+        
+        let nextPool = [...roundPool];
+        if (wasCorrect) {
+          nextPool = nextPool.filter(id => id !== currentQuestion.id);
+        }
+
+        let nextId;
+        if (nextPool.length === 0) {
+          nextPool = activeSet.questions.map(q => q.id);
+          let available = nextPool.filter(id => id !== currentQuestion.id);
+          
+          if (available.length === 0) available = nextPool;
+          nextId = available[Math.floor(Math.random() * available.length)];
+        } else {
+          let availableInPool = nextPool.filter(id => id !== currentQuestion.id);
+          
+          if (availableInPool.length > 0) {
+             nextId = availableInPool[Math.floor(Math.random() * availableInPool.length)];
+          } else {
+             let allAvailable = activeSet.questions.map(q => q.id).filter(id => id !== currentQuestion.id);
+             if (allAvailable.length > 0) {
+                 nextId = allAvailable[Math.floor(Math.random() * allAvailable.length)];
+             } else {
+                 nextId = currentQuestion.id;
+             }
+          }
+        }
+
+        setRoundPool(nextPool);
+        const nextQ = activeSet.questions.find(q => q.id === nextId);
+        setCurrentQuestion(nextQ);
+        setSelectedOption(null);
+        setIsAnswered(false);
+      };
+
+      const handleEndSession = () => {
+        const finalAnswerCount = isAnswered ? questionsAnswered + 1 : questionsAnswered;
+        onComplete(score, finalAnswerCount);
+      };
+
+      const loadNextQRef = useRef(loadNextQuestion);
+      useEffect(() => { loadNextQRef.current = loadNextQuestion; }, [loadNextQuestion]);
+
+      useEffect(() => {
+        const handleEsc = (e) => {
+          if (e.key === 'Escape') {
+            setShowStreakModal(prev => {
+              if (prev) loadNextQRef.current(); // Skip to next question if dismissing via Escape
+              return false;
+            });
+          }
+        };
+        window.addEventListener('keydown', handleEsc);
+        return () => window.removeEventListener('keydown', handleEsc);
+      }, []);
+
+      useEffect(() => {
+        const handleKeyDown = (e) => {
+          if (showStreakModal || isPlayingFlappy || isAnswered) return;
+          const key = parseInt(e.key, 10);
+          if (!isNaN(key) && key >= 1 && key <= displayOptions.length) {
+            handleSelect(displayOptions[key - 1].originalIndex);
+          }
+        };
+        
+        window.addEventListener('keydown', handleKeyDown);
+        return () => window.removeEventListener('keydown', handleKeyDown);
+      }, [isAnswered, displayOptions, showStreakModal, isPlayingFlappy]);
+
+      useEffect(() => {
+        let timer;
+        let listenerTimeout;
+
+        const advance = () => {
+          if (shouldPlayMinigame) {
+            setShouldPlayMinigame(false);
+            setStreak(0); // Reset streak
+            setShowStreakModal(true);
+          } else if (score >= 1000) {
+            handleEndSession();
+          } else {
+            loadNextQuestion();
+          }
+        };
+
+        const handleSkip = (e) => {
+          if (showStreakModal || isPlayingFlappy) return; // Don't skip if handling modal/game
+          if (e.type === 'keydown' && e.key === ' ') e.preventDefault();
+          clearTimeout(timer);
+          advance();
+        };
+
+        if (isAnswered && !showStreakModal && !isPlayingFlappy) {
+          timer = setTimeout(advance, 1500); 
+
+          listenerTimeout = setTimeout(() => {
+            window.addEventListener('keydown', handleSkip);
+            window.addEventListener('mousedown', handleSkip);
+            window.addEventListener('touchstart', handleSkip);
+          }, 150);
+        }
+        
+        return () => {
+          clearTimeout(timer);
+          clearTimeout(listenerTimeout);
+          window.removeEventListener('keydown', handleSkip);
+          window.removeEventListener('mousedown', handleSkip);
+          window.removeEventListener('touchstart', handleSkip);
+        };
+      }, [isAnswered, score, shouldPlayMinigame, showStreakModal, isPlayingFlappy]);
+
+      if (isPlayingFlappy) {
+        return (
+          <div className="max-w-2xl mx-auto">
+            <div className="flex items-center justify-between mb-6 px-4">
+              <h2 className="text-2xl font-bold text-slate-800">Flappy Avatar Break!</h2>
+              <button 
+                onClick={() => { setIsPlayingFlappy(false); loadNextQuestion(); }} 
+                className="text-slate-500 hover:text-slate-800 font-medium text-sm transition-colors bg-white px-3 py-1.5 rounded-full border border-slate-200 shadow-sm"
+              >
+                Skip Mini-Game
+              </button>
+            </div>
+            <FlappyMiniGame 
+              avatarId={equippedAvatar} 
+              onComplete={() => { setIsPlayingFlappy(false); loadNextQuestion(); }} 
+            />
+          </div>
+        );
+      }
+
+      return (
+        <div className="max-w-2xl mx-auto relative">
+          {/* Streak Congratulation Modal as Overlay */}
+          {showStreakModal && (
+            <div 
+              className="fixed inset-0 bg-slate-900/40 backdrop-blur-sm flex items-center justify-center z-50 p-4" 
+              onClick={() => { setShowStreakModal(false); loadNextQuestion(); }}
+            >
+              <div 
+                className="bg-white p-10 rounded-3xl shadow-xl text-center border border-slate-200 max-w-md w-full relative" 
+                onClick={(e) => e.stopPropagation()}
+              >
+                <button 
+                  onClick={() => {
+                    setMinigameDisabled(true);
+                    setShowStreakModal(false);
+                    loadNextQuestion();
+                  }}
+                  className="absolute top-5 right-5 text-slate-400 hover:text-slate-600 text-xs font-bold transition-colors"
+                >
+                  Don't show this again!
+                </button>
+                <div className="text-6xl mb-6 animate-bounce">🔥</div>
+                <h2 className="text-4xl font-extrabold text-slate-800 mb-4">10 Streak!</h2>
+                <p className="text-slate-500 mb-8 text-lg font-medium">Amazing job! Take a quick break and play a round of Flappy Avatar.</p>
+                <button 
+                  onClick={() => { setShowStreakModal(false); setIsPlayingFlappy(true); }} 
+                  className="w-full py-4 bg-indigo-600 text-white rounded-xl font-bold text-lg hover:bg-indigo-700 transition-all shadow-md active:scale-95"
+                >
+                  Play Mini-Game
+                </button>
+              </div>
+            </div>
+          )}
+
+          <div className="flex items-center justify-between mb-8">
+            <button onClick={handleEndSession} className="bg-slate-200 hover:bg-slate-300 text-slate-700 px-4 py-1.5 rounded-full font-bold shadow-sm transition-colors text-sm">
+              End Game
+            </button>
+            <div className="flex items-center gap-2 sm:gap-4">
+              <div className="hidden sm:block text-slate-500 font-medium text-sm">
+                Answered: {questionsAnswered}
+              </div>
+              <div className={`px-3 sm:px-4 py-1.5 rounded-full font-bold shadow-sm border text-sm transition-colors ${streak >= 8 ? 'bg-orange-100 text-orange-800 border-orange-200' : 'bg-slate-100 text-slate-600 border-slate-200'}`}>
+                {streak >= 8 ? '🔥 ' : ''}Streak: {streak}
+              </div>
+              <div className="bg-indigo-100 text-indigo-800 px-3 sm:px-4 py-1.5 rounded-full font-bold shadow-sm border border-indigo-200 text-sm">
+                Score: {score}
+              </div>
+            </div>
+          </div>
+
+          <div className="bg-white rounded-3xl shadow-sm border border-slate-200 p-8 mb-6">
+            <div className="flex items-center justify-between mb-4">
+               <span className="text-xs font-bold tracking-wider text-indigo-500 uppercase">Infinite Mode</span>
+               <span className="text-xs text-slate-400">Press 1-{displayOptions.length} to answer</span>
+            </div>
+            <h2 className="text-2xl font-bold text-slate-800 mb-8 leading-snug">
+              {currentQuestion.text}
+            </h2>
+
+            <div className="space-y-3">
+              {displayOptions.map((optObj, displayIndex) => {
+                const originalIndex = optObj.originalIndex;
+                let btnClass = "w-full text-left p-4 rounded-xl border-2 transition-all font-medium flex items-center justify-between ";
+                
+                if (!isAnswered) {
+                  btnClass += "border-slate-200 bg-white hover:border-indigo-300 hover:bg-slate-50 text-slate-700 cursor-pointer";
+                } else {
+                  if (currentQuestion.correctIndices.includes(originalIndex)) {
+                    btnClass += "border-green-500 bg-green-50 text-green-800"; // Always highlight all correct answers
+                  } else if (selectedOption === originalIndex) {
+                    btnClass += "border-red-500 bg-red-50 text-red-800"; // Highlight wrong choice
+                  } else {
+                    btnClass += "border-slate-200 bg-slate-50 text-slate-400 opacity-60"; // Fade others
+                  }
+                }
+
+                return (
+                  <button
+                    key={originalIndex}
+                    onClick={() => handleSelect(originalIndex)}
+                    disabled={isAnswered}
+                    className={btnClass}
+                  >
+                    <div className="flex items-center gap-3">
+                      <span className={`flex items-center justify-center w-6 h-6 rounded-md text-xs font-bold ${!isAnswered ? 'bg-slate-100 text-slate-500' : 'bg-transparent'}`}>
+                        {!isAnswered && displayIndex + 1}
+                      </span>
+                      <span>{optObj.text}</span>
+                    </div>
+                    
+                    {isAnswered && currentQuestion.correctIndices.includes(originalIndex) && <CheckCircle2 className="text-green-600" size={20} />}
+                    {isAnswered && selectedOption === originalIndex && !currentQuestion.correctIndices.includes(originalIndex) && <XCircle className="text-red-500" size={20} />}
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+
+          <div className="flex justify-center items-center h-16">
+            {isAnswered ? (
+              <div className={`font-bold flex items-center gap-2 text-lg ${isCorrect ? 'text-green-600 animate-bounce' : 'text-red-500'}`}>
+                 {isCorrect ? (
+                   <>
+                     <CheckCircle2 size={24} /> 
+                     Correct! {lastPointsEarned === 7 ? '(Recovery Bonus! +7 pts)' : '(+5 pts)'}
+                   </>
+                 ) : (
+                   <><XCircle size={24} /> Incorrect! (-1 pt)</>
+                 )}
+              </div>
+            ) : (
+              <div className="text-slate-400 font-medium text-sm animate-pulse">
+                Waiting for answer...
+              </div>
+            )}
+          </div>
+        </div>
+      );
+    }
+
+    // ==========================================
+    // VIEW: RESULTS
+    // ==========================================
+    function Results({ activeSet, onBackToDashboard, onRetry }) {
+      const isGoodScore = activeSet.finalScore > 0;
+
+      return (
+        <div className="max-w-xl mx-auto pt-10">
+          <div className="bg-white rounded-3xl shadow-sm border border-slate-200 p-10 text-center relative overflow-hidden">
+            
+            <div className={`absolute top-0 left-1/2 -translate-x-1/2 -translate-y-1/2 w-64 h-64 rounded-full blur-3xl opacity-20 ${isGoodScore ? 'bg-green-500' : 'bg-indigo-500'}`}></div>
+
+            <div className="relative z-10">
+              <div className="mx-auto w-20 h-20 bg-indigo-50 rounded-full flex items-center justify-center text-indigo-600 mb-6 shadow-inner">
+                <Trophy size={40} />
+              </div>
+              
+              <h2 className="text-3xl font-extrabold text-slate-800 mb-2">Game Over!</h2>
+              <p className="text-slate-500 mb-8 font-medium">{activeSet.title}</p>
+              
+              <div className="bg-slate-50 rounded-2xl p-6 mb-8 border border-slate-100 flex gap-4 divide-x divide-slate-200">
+                <div className="flex-1">
+                  <p className="text-sm uppercase tracking-wider font-bold text-slate-400 mb-1">Final Score</p>
+                  <div className="text-5xl font-black text-slate-800">
+                    {activeSet.finalScore}
+                  </div>
+                </div>
+                <div className="flex-1">
+                  <p className="text-sm uppercase tracking-wider font-bold text-slate-400 mb-1">Questions</p>
+                  <div className="text-5xl font-black text-slate-800">
+                    {activeSet.questionsAnswered}
+                  </div>
+                </div>
+              </div>
+
+              <div className="flex flex-col sm:flex-row gap-4 justify-center">
+                <button
+                  onClick={onRetry}
+                  className="px-6 py-3 bg-indigo-50 hover:bg-indigo-100 text-indigo-700 font-bold rounded-xl transition-colors border border-indigo-200"
+                >
+                  Play Again
+                </button>
+                <button
+                  onClick={onBackToDashboard}
+                  className="px-6 py-3 bg-indigo-600 hover:bg-indigo-700 text-white font-bold rounded-xl shadow-sm transition-colors"
+                >
+                  Back to Dashboard
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      );
+    }
+
+    // ==========================================
+    // VIEW: SET DETAILS
+    // ==========================================
+    function SetDetails({ set, onBack, onStartStudy, onEdit, onDuplicate, onDelete }) {
+      const [expandedQs, setExpandedQs] = useState({});
+      const [setToDelete, setSetToDelete] = useState(false);
+
+      // Close modals on Escape
+      useEffect(() => {
+        const handleEsc = (e) => {
+          if (e.key === 'Escape') {
+            setSetToDelete(false);
+          }
+        };
+        window.addEventListener('keydown', handleEsc);
+        return () => window.removeEventListener('keydown', handleEsc);
+      }, []);
+
+      const toggleQ = (qId) => {
+        setExpandedQs(prev => ({ ...prev, [qId]: !prev[qId] }));
+      };
+
+      const confirmDelete = () => {
+        onDelete(set.id);
+      };
+
+      if (!set) return null;
+
+      return (
+        <div className="max-w-3xl mx-auto pb-10">
+          {/* Delete Modal */}
+          {setToDelete && (
+            <div className="fixed inset-0 bg-slate-900/40 backdrop-blur-sm flex items-center justify-center z-50 p-4" onClick={() => setSetToDelete(false)}>
+              <div className="bg-white rounded-2xl p-6 max-w-sm w-full shadow-xl" onClick={(e) => e.stopPropagation()}>
+                <div className="flex items-center gap-3 text-red-600 mb-4">
+                  <AlertTriangle size={24} />
+                  <h3 className="text-xl font-bold">Delete Set?</h3>
+                </div>
+                <p className="text-slate-600 mb-6">Are you sure you want to permanently delete this study set?</p>
+                <div className="flex gap-3 justify-end">
+                  <button 
+                    onClick={() => setSetToDelete(false)}
+                    className="px-4 py-2 text-slate-600 font-medium hover:bg-slate-100 rounded-lg transition-colors"
+                  >
+                    Cancel
+                  </button>
+                  <button 
+                    onClick={confirmDelete}
+                    className="px-4 py-2 bg-red-600 text-white font-medium hover:bg-red-700 rounded-lg transition-colors shadow-sm"
+                  >
+                    Delete
+                  </button>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* Header & Actions */}
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-8 gap-4">
+            <button onClick={onBack} className="flex items-center gap-2 text-slate-500 hover:text-slate-800 transition-colors w-fit font-medium">
+              <ArrowLeft size={18} /> Back to Dashboard
+            </button>
+            
+            <div className="flex flex-wrap items-center gap-2">
+              <button 
+                onClick={() => onDuplicate(set)}
+                className="flex items-center gap-2 px-3 py-2 bg-white border border-slate-200 text-slate-600 rounded-lg hover:bg-slate-50 transition-colors font-medium text-sm shadow-sm"
+              >
+                <Copy size={16} /> {set.isDefault ? 'Copy to My Sets' : 'Duplicate'}
+              </button>
+              
+              {!set.isDefault && (
+                <>
+                  <button 
+                    onClick={() => onEdit(set)}
+                    className="flex items-center gap-2 px-3 py-2 bg-white border border-slate-200 text-slate-600 rounded-lg hover:bg-slate-50 transition-colors font-medium text-sm shadow-sm"
+                  >
+                    <Edit2 size={16} /> Edit
+                  </button>
+                  <button 
+                    onClick={() => setSetToDelete(true)}
+                    className="flex items-center gap-2 px-3 py-2 bg-white border border-red-200 text-red-600 rounded-lg hover:bg-red-50 transition-colors font-medium text-sm shadow-sm"
+                  >
+                    <Trash2 size={16} /> Delete
+                  </button>
+                </>
+              )}
+
+              <button 
+                onClick={() => onStartStudy(set)}
+                className="flex items-center gap-2 px-5 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors font-medium shadow-sm ml-2"
+              >
+                <Play size={16} /> Study Now
+              </button>
+            </div>
+          </div>
+
+          {/* Set Info */}
+          <div className="mb-8">
+            <h1 className="text-3xl font-extrabold text-slate-800 mb-3">{set.title}</h1>
+            <span className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider ${set.isDefault ? 'bg-slate-200 text-slate-700' : 'bg-purple-100 text-purple-700'}`}>
+              {set.isDefault ? 'Default Set' : 'Custom Set'}
+            </span>
+          </div>
+
+          {/* Questions List */}
+          <div className="space-y-4">
+            <h2 className="text-xl font-bold text-slate-800 mb-4 flex items-center gap-2">
+              Questions <span className="bg-slate-200 text-slate-600 text-sm py-0.5 px-2.5 rounded-full">{set.questions.length}</span>
+            </h2>
+            
+            {set.questions.map((q, index) => (
+              <div key={q.id} className="bg-white rounded-2xl border border-slate-200 overflow-hidden shadow-sm hover:shadow-md transition-shadow">
+                <div 
+                  onClick={() => toggleQ(q.id)}
+                  className="p-5 cursor-pointer flex items-start gap-4"
+                >
+                  <div className="w-8 h-8 shrink-0 bg-indigo-50 text-indigo-600 rounded-full flex items-center justify-center font-bold">
+                    {index + 1}
+                  </div>
+                  <div className="flex-1">
+                    <h3 className="text-lg font-bold text-slate-800 pr-4">{q.text}</h3>
+                    <div className="mt-2 flex items-center gap-1.5 text-xs font-medium text-slate-500">
+                      {q.scrambleAnswers !== false ? (
+                        <><Shuffle size={14} /> Shuffled Answers</>
+                      ) : (
+                        <><ListOrdered size={14} /> Fixed Order</>
+                      )}
+                    </div>
+                  </div>
+                  <div className="shrink-0 text-slate-400 mt-1">
+                    {expandedQs[q.id] ? <ChevronUp size={20} /> : <ChevronDown size={20} />}
+                  </div>
+                </div>
+
+                {expandedQs[q.id] && (
+                  <div className="p-5 pt-0 bg-slate-50 border-t border-slate-100">
+                    <div className="mt-4 space-y-2">
+                      {q.options.map((opt, optIdx) => {
+                        const isCorrect = q.correctIndices.includes(optIdx);
+                        return (
+                          <div 
+                            key={optIdx} 
+                            className={`flex items-center gap-3 p-3 rounded-xl border ${isCorrect ? 'border-green-200 bg-green-50/50' : 'border-slate-200 bg-white'}`}
+                          >
+                            <div className={`shrink-0 ${isCorrect ? 'text-green-500' : 'text-slate-300'}`}>
+                              {isCorrect ? <CheckCircle2 size={20} /> : <XCircle size={20} />}
+                            </div>
+                            <span className={`font-medium ${isCorrect ? 'text-green-800' : 'text-slate-600'}`}>
+                              {opt}
+                            </span>
+                            {isCorrect && (
+                              <span className="ml-auto text-xs font-bold text-green-600 bg-green-100 px-2 py-0.5 rounded-full">
+                                Correct
+                              </span>
+                            )}
+                          </div>
+                        );
+                      })}
+                    </div>
+                  </div>
+                )}
+              </div>
+            ))}
+          </div>
+        </div>
+      );
+    }
+
+    const root = ReactDOM.createRoot(document.getElementById('root'));
+    root.render(<App />);
+  </script>
+</body>
+</html>
