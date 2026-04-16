@@ -19,7 +19,7 @@
   <div id="root"></div>
 
   <script type="text/babel">
-    const { useState, useEffect, useRef } = React;
+    const { useState, useEffect, useRef, useMemo } = React;
 
     // --- ICONS (Converted from Lucide for standalone use) ---
     const createIcon = (paths) => ({ size = 24, className = '', ...props }) => (
@@ -48,6 +48,7 @@
     const ChevronDown = createIcon(<polyline points="6 9 12 15 18 9"/>);
     const ChevronUp = createIcon(<polyline points="18 15 12 9 6 15"/>);
     const Heart = createIcon(<path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z"/>);
+    const Sparkles = createIcon(<><path d="M9.937 15.5A2 2 0 0 0 8.5 14.063l-6.135-1.582a.5.5 0 0 1 0-.962L8.5 9.936A2 2 0 0 0 9.937 8.5l1.582-6.135a.5.5 0 0 1 .963 0L14.063 8.5A2 2 0 0 0 15.5 9.937l6.135 1.581a.5.5 0 0 1 0 .964L15.5 14.063a2 2 0 0 0-1.437 1.437l-1.582 6.135a.5.5 0 0 1-.963 0z"/><path d="M20 3v4"/><path d="M22 5h-4"/><path d="M4 17v2"/><path d="M5 18H3"/></>);
 
     // --- MOCK DATA & CONSTANTS ---
     const INITIAL_SETS = [
@@ -56,11 +57,11 @@
         title: 'Geography and History',
         isDefault: true,
         questions: [
-          { id: 'gh1', text: 'Which continent is known as the "Dark Continent"?', options: ['Asia', 'Africa', 'Europe', 'Australia'], correctIndices: [1], scrambleAnswers: true },
-          { id: 'gh2', text: 'Who was the first President of the United States?', options: ['Abraham Lincoln', 'Thomas Jefferson', 'George Washington'], correctIndices: [2], scrambleAnswers: true },
-          { id: 'gh3', text: 'Which of these are oceans?', options: ['Atlantic', 'Mediterranean', 'Indian', 'Nile'], correctIndices: [0, 2], scrambleAnswers: true },
-          { id: 'gh4', text: 'In which country would you find the Great Pyramid of Giza?', options: ['Mexico', 'Egypt', 'Italy'], correctIndices: [1], scrambleAnswers: true },
-          { id: 'gh5', text: 'Which city is the capital of France?', options: ['Berlin', 'London', 'Paris', 'Madrid'], correctIndices: [2], scrambleAnswers: true }
+          { id: 'gh1', type: 'multiple-choice', text: 'Which continent is known as the "Dark Continent"?', options: ['Asia', 'Africa', 'Europe', 'Australia'], correctIndices: [1], scrambleAnswers: true },
+          { id: 'gh2', type: 'multiple-choice', text: 'Who was the first President of the United States?', options: ['Abraham Lincoln', 'Thomas Jefferson', 'George Washington'], correctIndices: [2], scrambleAnswers: true },
+          { id: 'gh3', type: 'multiple-choice', text: 'Which of these are oceans?', options: ['Atlantic', 'Mediterranean', 'Indian', 'Nile'], correctIndices: [0, 2], scrambleAnswers: true },
+          { id: 'gh4', type: 'multiple-choice', text: 'In which country would you find the Great Pyramid of Giza?', options: ['Mexico', 'Egypt', 'Italy'], correctIndices: [1], scrambleAnswers: true },
+          { id: 'gh5', type: 'multiple-choice', text: 'Which city is the capital of France?', options: ['Berlin', 'London', 'Paris', 'Madrid'], correctIndices: [2], scrambleAnswers: true }
         ]
       },
       {
@@ -68,11 +69,11 @@
         title: 'Math',
         isDefault: true,
         questions: [
-          { id: 'm1', text: 'What is 5+7?', options: ['10', '12', '13'], correctIndices: [1], scrambleAnswers: true },
-          { id: 'm2', text: 'Which of these numbers are even?', options: ['4', '7', '10', '15'], correctIndices: [0, 2], scrambleAnswers: true },
-          { id: 'm3', text: 'What is 10×3?', options: ['13', '30', '300'], correctIndices: [1], scrambleAnswers: true },
-          { id: 'm4', text: 'Solve for x: x−2=5.', options: ['3', '7', '10'], correctIndices: [1], scrambleAnswers: true },
-          { id: 'm5', text: 'How many sides does a triangle have?', options: ['3', '4', '5'], correctIndices: [0], scrambleAnswers: true }
+          { id: 'm1', type: 'multiple-choice', text: 'What is 5+7?', options: ['10', '12', '13'], correctIndices: [1], scrambleAnswers: true },
+          { id: 'm2', type: 'multiple-choice', text: 'Which of these numbers are even?', options: ['4', '7', '10', '15'], correctIndices: [0, 2], scrambleAnswers: true },
+          { id: 'm3', type: 'multiple-choice', text: 'What is 10×3?', options: ['13', '30', '300'], correctIndices: [1], scrambleAnswers: true },
+          { id: 'm4', type: 'multiple-choice', text: 'Solve for x: x−2=5.', options: ['3', '7', '10'], correctIndices: [1], scrambleAnswers: true },
+          { id: 'm5', type: 'multiple-choice', text: 'How many sides does a triangle have?', options: ['3', '4', '5'], correctIndices: [0], scrambleAnswers: true }
         ]
       },
       {
@@ -80,11 +81,11 @@
         title: 'Vocabulary',
         isDefault: true,
         questions: [
-          { id: 'v1', text: 'What is a synonym for "happy"?', options: ['Sad', 'Joyful', 'Angry'], correctIndices: [1], scrambleAnswers: true },
-          { id: 'v2', text: 'Which of these words are verbs (action words)?', options: ['Run', 'Apple', 'Jump', 'Blue'], correctIndices: [0, 2], scrambleAnswers: true },
-          { id: 'v3', text: 'What is the opposite of "hot"?', options: ['Warm', 'Cold', 'Spicy'], correctIndices: [1], scrambleAnswers: true },
-          { id: 'v4', text: 'A person who cooks food in a restaurant is called a:', options: ['Pilot', 'Chef', 'Doctor'], correctIndices: [1], scrambleAnswers: true },
-          { id: 'v5', text: 'Which word is spelled correctly?', options: ['Tommorow', 'Tomorrow', 'Tomorow'], correctIndices: [1], scrambleAnswers: true }
+          { id: 'v1', type: 'multiple-choice', text: 'What is a synonym for "happy"?', options: ['Sad', 'Joyful', 'Angry'], correctIndices: [1], scrambleAnswers: true },
+          { id: 'v2', type: 'multiple-choice', text: 'Which of these words are verbs (action words)?', options: ['Run', 'Apple', 'Jump', 'Blue'], correctIndices: [0, 2], scrambleAnswers: true },
+          { id: 'v3', type: 'multiple-choice', text: 'What is the opposite of "hot"?', options: ['Warm', 'Cold', 'Spicy'], correctIndices: [1], scrambleAnswers: true },
+          { id: 'v4', type: 'multiple-choice', text: 'A person who cooks food in a restaurant is called a:', options: ['Pilot', 'Chef', 'Doctor'], correctIndices: [1], scrambleAnswers: true },
+          { id: 'v5', type: 'multiple-choice', text: 'Which word is spelled correctly?', options: ['Tommorow', 'Tomorrow', 'Tomorow'], correctIndices: [1], scrambleAnswers: true }
         ]
       }
     ];
@@ -94,7 +95,7 @@
       Rare: { weight: 35, cost: 100, labelColor: 'text-blue-500', glow: 'text-blue-400' },
       Epic: { weight: 20, cost: 200, labelColor: 'text-purple-600', glow: 'text-purple-400' },
       Legendary: { weight: 2, cost: 500, labelColor: 'text-amber-500', glow: 'text-amber-400' },
-      Mythic: { weight: 0, cost: 750, labelColor: 'text-red-500', glow: 'text-red-400' }
+      Mythic: { weight: 0, cost: 750, labelColor: 'text-red-500', glow: 'text-red-400' } // Seasonals
     };
 
     const STORE_PACKS = [
@@ -177,6 +178,8 @@
     };
 
     function App() {
+      const todayStr = new Date().toDateString();
+      
       const [sets, setSets] = useState(() => {
         const saved = localStorage.getItem('knowMore_sets');
         return saved ? JSON.parse(saved) : INITIAL_SETS;
@@ -188,6 +191,14 @@
       const [gems, setGems] = useState(() => {
         const saved = localStorage.getItem('knowMore_gems');
         return saved ? parseInt(saved, 10) : 0;
+      });
+      const [dailyGemsTracker, setDailyGemsTracker] = useState(() => {
+        const saved = localStorage.getItem('knowMore_dailyGems');
+        if (saved) {
+          const parsed = JSON.parse(saved);
+          if (parsed.date === todayStr) return parsed;
+        }
+        return { date: todayStr, earned: 0 };
       });
       const [ownedAvatars, setOwnedAvatars] = useState(() => {
         const saved = localStorage.getItem('knowMore_ownedAvatars');
@@ -205,6 +216,7 @@
       // Save state to localStorage natively
       useEffect(() => { localStorage.setItem('knowMore_sets', JSON.stringify(sets)); }, [sets]);
       useEffect(() => { localStorage.setItem('knowMore_gems', gems.toString()); }, [gems]);
+      useEffect(() => { localStorage.setItem('knowMore_dailyGems', JSON.stringify(dailyGemsTracker)); }, [dailyGemsTracker]);
       useEffect(() => { localStorage.setItem('knowMore_ownedAvatars', JSON.stringify(ownedAvatars)); }, [ownedAvatars]);
       useEffect(() => { localStorage.setItem('knowMore_equippedAvatar', equippedAvatar); }, [equippedAvatar]);
       useEffect(() => { localStorage.setItem('knowMore_minigameDisabled', JSON.stringify(minigameDisabled)); }, [minigameDisabled]);
@@ -261,15 +273,36 @@
       };
 
       const startStudy = (set) => {
-        setActiveSet({ ...set, finalScore: 0, questionsAnswered: 0 });
+        const updatedSet = { ...set, lastStudied: Date.now() };
+        setSets(prev => prev.map(s => s.id === set.id ? updatedSet : s));
+        setActiveSet({ ...updatedSet, finalScore: 0, questionsAnswered: 0 });
         setCurrentView('study');
       };
 
       const finishStudy = (score, questionsAnswered) => {
-        setActiveSet(prev => ({ ...prev, finalScore: score, questionsAnswered }));
+        let gemsToAward = 0;
+        let limitHit = false;
+        
         if (score > 0) {
-          setGems(prev => prev + score);
+          const availableLimit = 2000 - dailyGemsTracker.earned;
+          gemsToAward = Math.max(0, Math.min(score, availableLimit));
+          
+          if (gemsToAward > 0) {
+            setGems(prev => prev + gemsToAward);
+            setDailyGemsTracker(prev => ({ ...prev, earned: prev.earned + gemsToAward }));
+          }
+          if (dailyGemsTracker.earned + gemsToAward >= 2000) {
+            limitHit = true;
+          }
         }
+
+        setActiveSet(prev => ({ 
+          ...prev, 
+          finalScore: score, 
+          questionsAnswered, 
+          gemsEarned: gemsToAward, 
+          dailyLimitHit: limitHit 
+        }));
         setCurrentView('results');
       };
 
@@ -298,6 +331,7 @@
           id: Date.now().toString(),
           title: `${setToDuplicate.title} (Copy)`,
           isDefault: false, 
+          lastStudied: null,
           questions: setToDuplicate.questions.map(q => ({
             ...q,
             id: Date.now().toString() + Math.random().toString(36).substring(2, 9)
@@ -352,12 +386,16 @@
     // ==========================================
     function Dashboard({ sets, onStartStudy, onCreateNew, onDeleteSet, onEditSet, onDuplicateSet, onViewSet, gems, setGems, ownedAvatars, setOwnedAvatars, equippedAvatar, setEquippedAvatar, dashboardMode, setDashboardMode }) {
       const [setToDelete, setSetToDelete] = useState(null);
-      const [activeTab, setActiveTab] = useState('default'); 
+      const [activeTab, setActiveTab] = useState('all'); 
+      const [sortBy, setSortBy] = useState('newest');
+      const [isSortDropdownOpen, setIsSortDropdownOpen] = useState(false);
+      const sortDropdownRef = useRef(null);
       const [avatarTab, setAvatarTab] = useState('my'); 
       const [buyModal, setBuyModal] = useState(null);
       const [buyPackModal, setBuyPackModal] = useState(null);
       const [packOpening, setPackOpening] = useState(null);
       const [sellModal, setSellModal] = useState(null);
+      const [sellExtrasModal, setSellExtrasModal] = useState(false);
       const [sellQuantity, setSellQuantity] = useState(1);
       const [instantOpen, setInstantOpen] = useState(false);
       const [packAmount, setPackAmount] = useState(1);
@@ -373,6 +411,18 @@
       const currentMonth = new Date().getMonth();
       const currentMoonPhaseId = getMoonPhaseId();
 
+      // Create a stable random shuffle for the home page carousel
+      const carouselAvatars = useMemo(() => {
+        const buyable = STORE_AVATARS.filter(a => !a.unbuyable);
+        const shuffled = [...buyable];
+        for (let i = shuffled.length - 1; i > 0; i--) {
+          const j = Math.floor(Math.random() * (i + 1));
+          [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+        }
+        // Repeat it to ensure infinite smooth scrolling
+        return [...shuffled, ...shuffled, ...shuffled, ...shuffled, ...shuffled];
+      }, []);
+
       useEffect(() => {
         const handleEsc = (e) => {
           if (e.key === 'Escape') {
@@ -380,10 +430,23 @@
             setBuyPackModal(null);
             setSellModal(null);
             setSetToDelete(null);
+            setSellExtrasModal(false);
+            setIsSortDropdownOpen(false);
+          }
+        };
+        const handleClickOutside = (e) => {
+          if (sortDropdownRef.current && !sortDropdownRef.current.contains(e.target)) {
+            setIsSortDropdownOpen(false);
           }
         };
         window.addEventListener('keydown', handleEsc);
-        return () => window.removeEventListener('keydown', handleEsc);
+        document.addEventListener('mousedown', handleClickOutside);
+        document.addEventListener('touchstart', handleClickOutside);
+        return () => {
+          window.removeEventListener('keydown', handleEsc);
+          document.removeEventListener('mousedown', handleClickOutside);
+          document.removeEventListener('touchstart', handleClickOutside);
+        };
       }, []);
 
       useEffect(() => {
@@ -497,10 +560,63 @@
         setExpandedAvatarSections(prev => ({ ...prev, [id]: !prev[id] }));
       };
 
-      const displayedSets = sets.filter(s => activeTab === 'default' ? s.isDefault : !s.isDefault);
+      // Bulk Sell Extras Logic
+      const extrasList = [];
+      let extrasRefundTotal = 0;
+      Object.entries(ownedAvatars).forEach(([id, count]) => {
+        if (count > 1) {
+          const avatar = STORE_AVATARS.find(a => a.id === id);
+          if (avatar && avatar.sellable !== false) {
+            const sellCount = count - 1;
+            const cost = avatar.cost !== undefined ? avatar.cost : AVATAR_RARITIES[avatar.rarity].cost;
+            const refund = Math.floor(cost / 2) * sellCount;
+            extrasList.push({ avatar, sellCount, refund });
+            extrasRefundTotal += refund;
+          }
+        }
+      });
 
+      const confirmSellAllExtras = () => {
+        setOwnedAvatars(prev => {
+          const newOwned = { ...prev };
+          extrasList.forEach(({ avatar, sellCount }) => {
+            newOwned[avatar.id] -= sellCount;
+          });
+          return newOwned;
+        });
+        setGems(prev => prev + extrasRefundTotal);
+        setSellExtrasModal(false);
+      };
+
+      // Sets Filtering
+      let displayedSets = sets.filter(s => activeTab === 'all' ? true : activeTab === 'default' ? s.isDefault : !s.isDefault);
+      displayedSets.sort((a, b) => {
+        if (sortBy === 'a-z') return a.title.localeCompare(b.title);
+        if (sortBy === 'z-a') return b.title.localeCompare(a.title);
+        if (sortBy === 'questions-asc') return a.questions.length - b.questions.length;
+        if (sortBy === 'questions-desc') return b.questions.length - a.questions.length;
+        if (sortBy === 'last-studied') return (b.lastStudied || 0) - (a.lastStudied || 0);
+        
+        // Fallback for newest/oldest (default sets load first/last based on 'isDefault')
+        const timeA = parseInt(a.id) > 100000 ? parseInt(a.id) : (a.isDefault ? 0 : 1);
+        const timeB = parseInt(b.id) > 100000 ? parseInt(b.id) : (b.isDefault ? 0 : 1);
+        if (sortBy === 'newest') return timeB - timeA;
+        if (sortBy === 'oldest') return timeA - timeB;
+        return 0;
+      });
+
+      const sortOptions = [
+        { value: 'newest', label: 'Newest - Oldest' },
+        { value: 'oldest', label: 'Oldest - Newest' },
+        { value: 'a-z', label: 'A - Z' },
+        { value: 'z-a', label: 'Z - A' },
+        { value: 'questions-asc', label: 'Least Questions to Most' },
+        { value: 'questions-desc', label: 'Most Questions to Least' },
+        { value: 'last-studied', label: 'Recently Studied' }
+      ];
+
+      // Avatar Grouping
       const moonPhaseAvatars = STORE_AVATARS.filter(a => a.group === 'Moon');
-      
       const myAvatarsSections = [
         ...STORE_PACKS.map(pack => {
           const packAvatars = STORE_AVATARS.filter(a => a.pack === pack.type);
@@ -565,7 +681,7 @@
       let tierStyles = 'bg-orange-100 text-orange-800 border-orange-300';
       if (avatarScore >= 500) {
         tierName = 'Master';
-        tierStyles = 'bg-rose-100 text-rose-800 border-rose-300';
+        tierStyles = 'bg-purple-100 text-purple-800 border-purple-400 shadow-[0_0_15px_rgba(168,85,247,0.4)]';
       } else if (avatarScore >= 200) {
         tierName = 'Professional';
         tierStyles = 'bg-yellow-100 text-yellow-800 border-yellow-400';
@@ -740,6 +856,51 @@
             </div>
           )}
 
+          {/* Bulk Sell Extras Modal */}
+          {sellExtrasModal && (
+            <div className="fixed inset-0 bg-slate-900/40 backdrop-blur-sm flex items-center justify-center z-50 p-4" onClick={() => setSellExtrasModal(false)}>
+              <div className="bg-white rounded-3xl p-6 max-w-md w-full shadow-2xl text-center overflow-hidden flex flex-col max-h-[80vh]" onClick={(e) => e.stopPropagation()}>
+                <h3 className="text-2xl font-bold text-slate-800 mb-2">Sell All Extras</h3>
+                <p className="text-slate-500 mb-6">Review the duplicates you are about to sell.</p>
+                
+                <div className="overflow-y-auto mb-6 pr-2 space-y-3 flex-shrink">
+                  {extrasList.map((extra, idx) => (
+                    <div key={idx} className="flex items-center justify-between bg-slate-50 p-3 rounded-xl border border-slate-100">
+                      <div className="flex items-center gap-3">
+                        <div className={`w-10 h-10 text-xl flex items-center justify-center rounded-lg ${extra.avatar.color} border ${extra.avatar.border}`}>
+                          {extra.avatar.emoji}
+                        </div>
+                        <div className="text-left">
+                          <p className="font-bold text-slate-800 text-sm">{extra.avatar.name}</p>
+                          <p className="text-xs text-slate-500">Selling: <span className="font-bold text-slate-700">{extra.sellCount}</span></p>
+                        </div>
+                      </div>
+                      <div className="text-green-600 font-bold text-sm flex items-center gap-1">
+                        +{extra.refund} <Gem size={14} className="fill-green-200"/>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+
+                <div className="mt-auto border-t border-slate-200 pt-4">
+                  <div className="flex justify-between items-center mb-6">
+                    <span className="font-bold text-slate-600">Total Refund:</span>
+                    <span className="text-2xl font-black text-green-600 flex items-center gap-1.5">
+                      +{extrasRefundTotal} <Gem size={24} className="fill-green-200 text-green-500"/>
+                    </span>
+                  </div>
+
+                  <div className="flex gap-3 justify-center">
+                    <button onClick={() => setSellExtrasModal(false)} className="px-6 py-3 text-slate-600 font-bold bg-slate-100 hover:bg-slate-200 rounded-xl transition-colors w-full">Cancel</button>
+                    <button onClick={confirmSellAllExtras} className="px-6 py-3 bg-red-500 hover:bg-red-600 text-white font-bold rounded-xl transition-colors shadow-sm w-full">
+                      Sell All
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
+
           {/* Delete Set Modal */}
           {setToDelete && (
             <div className="fixed inset-0 bg-slate-900/40 backdrop-blur-sm flex items-center justify-center z-50 p-4" onClick={() => setSetToDelete(null)}>
@@ -810,7 +971,7 @@
                 .animate-scroll-rl {
                   display: flex;
                   width: max-content;
-                  animation: scrollRightToLeft 50s linear infinite;
+                  animation: scrollRightToLeft 100s linear infinite;
                 }
               `}</style>
               
@@ -835,26 +996,32 @@
                   <span className="bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent">Independent Studying</span> <br className="hidden sm:block" />
                   App
                 </h2>
-                <div className="flex flex-col sm:flex-row gap-4 justify-center">
+                <div className="flex flex-col sm:flex-row flex-wrap gap-3 sm:gap-4 justify-center max-w-2xl mx-auto">
                   <button 
                     onClick={() => setDashboardMode('sets')} 
-                    className="px-8 py-4 bg-indigo-600 hover:bg-indigo-700 text-white rounded-2xl font-black text-lg shadow-lg transition-all hover:-translate-y-1 hover:shadow-xl"
+                    className="px-6 py-4 bg-indigo-600 hover:bg-indigo-700 text-white rounded-2xl font-black text-lg shadow-lg transition-all hover:-translate-y-1 hover:shadow-xl"
                   >
                     Start Studying
                   </button>
                   <button 
+                    onClick={onCreateNew} 
+                    className="px-6 py-4 bg-purple-600 hover:bg-purple-700 text-white rounded-2xl font-black text-lg shadow-lg transition-all hover:-translate-y-1 hover:shadow-xl"
+                  >
+                    Create Set
+                  </button>
+                  <button 
                     onClick={() => setDashboardMode('avatars')} 
-                    className="px-8 py-4 bg-white hover:bg-slate-50 text-indigo-600 border-2 border-indigo-100 hover:border-indigo-200 rounded-2xl font-black text-lg shadow-sm transition-all hover:-translate-y-1"
+                    className="px-6 py-4 bg-white hover:bg-slate-50 text-indigo-600 border-2 border-indigo-100 hover:border-indigo-200 rounded-2xl font-black text-lg shadow-sm transition-all hover:-translate-y-1"
                   >
                     View Avatars
                   </button>
                 </div>
               </div>
 
-              {/* Bottom Marquee - Avatars */}
+              {/* Bottom Marquee - Avatars (Shuffled and repeated for infinite smooth loop) */}
               <div className="absolute bottom-10 left-0 w-full overflow-hidden opacity-30 hover:opacity-80 transition-opacity duration-500 pointer-events-none">
-                 <div className="animate-scroll-rl gap-6">
-                    {[...STORE_AVATARS.slice(0,10), ...STORE_AVATARS.slice(0,10), ...STORE_AVATARS.slice(0,10), ...STORE_AVATARS.slice(0,10)].map((avatar, i) => (
+                 <div className="animate-scroll-rl gap-6" style={{ animationDuration: '80s' }}>
+                    {carouselAvatars.map((avatar, i) => (
                        <div key={i} className={`bg-white rounded-2xl border border-slate-200 p-4 shadow-sm w-32 shrink-0 flex flex-col items-center`}>
                          <div className={`w-16 h-16 text-3xl flex items-center justify-center rounded-2xl ${avatar.color} border-2 ${avatar.border} mb-3`}>
                             {avatar.emoji}
@@ -869,34 +1036,73 @@
 
           {dashboardMode === 'sets' && (
             <>
-              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-4">
                 <div>
                   <h2 className="text-2xl font-bold text-slate-800">Study Sets</h2>
                   <p className="text-slate-500">Test your knowledge with default or custom sets.</p>
                 </div>
                 <button
                   onClick={onCreateNew}
-                  className="flex items-center gap-2 bg-indigo-600 hover:bg-indigo-700 text-white px-5 py-2.5 rounded-xl font-medium transition-all shadow-sm hover:shadow active:scale-95"
+                  className="flex items-center gap-2 bg-indigo-600 hover:bg-indigo-700 text-white px-5 py-2.5 rounded-xl font-medium transition-all shadow-sm hover:shadow active:scale-95 shrink-0"
                 >
                   <Plus size={18} />
                   Create New Set
                 </button>
               </div>
 
-              <div className="border-b border-slate-200">
-                <div className="flex gap-8">
+              <div className="border-b border-slate-200 mb-6 pb-0 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+                <div className="flex gap-6 overflow-x-auto w-full sm:w-auto pb-2 sm:pb-0 hide-scrollbar">
+                  <button
+                    onClick={() => setActiveTab('all')}
+                    className={`pb-3 font-semibold text-sm transition-colors border-b-2 whitespace-nowrap ${activeTab === 'all' ? 'border-indigo-600 text-indigo-700' : 'border-transparent text-slate-500 hover:text-slate-800'}`}
+                  >
+                    All sets
+                  </button>
                   <button
                     onClick={() => setActiveTab('default')}
-                    className={`pb-3 font-semibold text-sm transition-colors border-b-2 ${activeTab === 'default' ? 'border-indigo-600 text-indigo-700' : 'border-transparent text-slate-500 hover:text-slate-800'}`}
+                    className={`pb-3 font-semibold text-sm transition-colors border-b-2 whitespace-nowrap ${activeTab === 'default' ? 'border-indigo-600 text-indigo-700' : 'border-transparent text-slate-500 hover:text-slate-800'}`}
                   >
                     Default sets
                   </button>
                   <button
                     onClick={() => setActiveTab('my')}
-                    className={`pb-3 font-semibold text-sm transition-colors border-b-2 ${activeTab === 'my' ? 'border-indigo-600 text-indigo-700' : 'border-transparent text-slate-500 hover:text-slate-800'}`}
+                    className={`pb-3 font-semibold text-sm transition-colors border-b-2 whitespace-nowrap ${activeTab === 'my' ? 'border-indigo-600 text-indigo-700' : 'border-transparent text-slate-500 hover:text-slate-800'}`}
                   >
                     My sets
                   </button>
+                </div>
+                
+                <div className="relative w-full sm:w-auto mb-3 sm:mb-0 z-10" ref={sortDropdownRef}>
+                  <button 
+                    onClick={() => setIsSortDropdownOpen(!isSortDropdownOpen)}
+                    className="flex items-center justify-between w-full sm:w-[220px] bg-white border border-slate-200 px-3 py-2 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-all hover:border-indigo-300"
+                  >
+                    <div className="flex items-center gap-2 truncate pr-2">
+                      <span className="text-sm font-semibold text-slate-500 shrink-0">Sort by:</span>
+                      <span className="text-sm font-bold text-slate-800 truncate">
+                        {sortOptions.find(opt => opt.value === sortBy)?.label}
+                      </span>
+                    </div>
+                    <ChevronDown size={16} className={`text-slate-400 shrink-0 transition-transform ${isSortDropdownOpen ? 'rotate-180' : ''}`} />
+                  </button>
+
+                  {isSortDropdownOpen && (
+                    <div className="absolute top-full left-0 sm:right-0 sm:left-auto mt-1 w-full sm:w-[260px] bg-white border border-slate-200 rounded-xl shadow-xl overflow-hidden py-1">
+                      {sortOptions.map(option => (
+                        <button
+                          key={option.value}
+                          onClick={() => {
+                            setSortBy(option.value);
+                            setIsSortDropdownOpen(false);
+                          }}
+                          className={`w-full text-left px-4 py-2.5 text-sm transition-colors flex items-center justify-between ${sortBy === option.value ? 'bg-indigo-50 text-indigo-700 font-bold' : 'text-slate-600 font-medium hover:bg-slate-50 hover:text-slate-900'}`}
+                        >
+                          {option.label}
+                          {sortBy === option.value && <CheckCircle2 size={16} className="text-indigo-600 shrink-0 ml-2" />}
+                        </button>
+                      ))}
+                    </div>
+                  )}
                 </div>
               </div>
 
@@ -906,10 +1112,10 @@
                     <BookOpen size={28} />
                   </div>
                   <h3 className="text-lg font-semibold text-slate-700 mb-1">
-                    {activeTab === 'my' ? 'No custom sets yet' : 'No default sets'}
+                    {activeTab === 'my' ? 'No custom sets yet' : 'No sets found'}
                   </h3>
                   <p className="text-slate-500 mb-6 max-w-sm mx-auto">
-                    {activeTab === 'my' ? "You haven't created any study sets. Click the button above to build your first one!" : "There are currently no default sets available."}
+                    {activeTab === 'my' ? "You haven't created any study sets. Click the button above to build your first one!" : "There are currently no sets available in this category."}
                   </p>
                   {activeTab === 'my' && (
                     <button
@@ -924,17 +1130,17 @@
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
                   {displayedSets.map(set => (
                     <div key={set.id} className="bg-white rounded-2xl border border-slate-200 p-5 shadow-sm hover:shadow-md transition-shadow flex flex-col group relative overflow-hidden">
-                      <div className="absolute top-0 right-0 p-3 opacity-0 group-hover:opacity-100 transition-opacity flex gap-1.5">
+                      <div className={`absolute top-0 right-0 p-3 opacity-0 group-hover:opacity-100 transition-opacity gap-1.5 ${!set.isDefault ? 'grid grid-cols-2' : 'flex'}`}>
                         <button 
                           onClick={(e) => { e.stopPropagation(); onViewSet(set); }}
-                          className="text-slate-400 hover:text-indigo-500 transition-colors p-1.5 bg-white/90 backdrop-blur rounded-md shadow-sm border border-slate-100"
+                          className="text-slate-400 hover:text-indigo-500 transition-colors p-1.5 bg-white/90 backdrop-blur rounded-md shadow-sm border border-slate-100 flex items-center justify-center"
                           title="View set"
                         >
                           <Eye size={16} />
                         </button>
                         <button 
                           onClick={(e) => { e.stopPropagation(); handleDuplicate(set); }}
-                          className="text-slate-400 hover:text-indigo-500 transition-colors p-1.5 bg-white/90 backdrop-blur rounded-md shadow-sm border border-slate-100"
+                          className="text-slate-400 hover:text-indigo-500 transition-colors p-1.5 bg-white/90 backdrop-blur rounded-md shadow-sm border border-slate-100 flex items-center justify-center"
                           title="Duplicate set"
                         >
                           <Copy size={16} />
@@ -943,14 +1149,14 @@
                           <>
                             <button 
                               onClick={(e) => { e.stopPropagation(); onEditSet(set); }}
-                              className="text-slate-400 hover:text-indigo-500 transition-colors p-1.5 bg-white/90 backdrop-blur rounded-md shadow-sm border border-slate-100"
+                              className="text-slate-400 hover:text-indigo-500 transition-colors p-1.5 bg-white/90 backdrop-blur rounded-md shadow-sm border border-slate-100 flex items-center justify-center"
                               title="Edit set"
                             >
                               <Edit2 size={16} />
                             </button>
                             <button 
                               onClick={(e) => { e.stopPropagation(); setSetToDelete(set.id); }}
-                              className="text-slate-400 hover:text-red-500 transition-colors p-1.5 bg-white/90 backdrop-blur rounded-md shadow-sm border border-slate-100"
+                              className="text-slate-400 hover:text-red-500 transition-colors p-1.5 bg-white/90 backdrop-blur rounded-md shadow-sm border border-slate-100 flex items-center justify-center"
                               title="Delete set"
                             >
                               <Trash2 size={16} />
@@ -959,10 +1165,24 @@
                         )}
                       </div>
                       <div className="mb-4">
-                        <span className="inline-block px-2.5 py-1 bg-indigo-50 text-indigo-700 text-xs font-semibold rounded-md mb-3">
-                          {set.questions.length} {set.questions.length === 1 ? 'Question' : 'Questions'}
-                        </span>
+                        <div className="flex gap-2 mb-3">
+                          <span className="inline-block px-2.5 py-1 bg-indigo-50 text-indigo-700 text-xs font-semibold rounded-md">
+                            {set.questions.length} {set.questions.length === 1 ? 'Question' : 'Questions'}
+                          </span>
+                          {set.isDefault ? (
+                            <span className="inline-block px-2.5 py-1 bg-slate-100 text-slate-600 text-xs font-semibold rounded-md">
+                              Default
+                            </span>
+                          ) : (
+                            <span className="inline-block px-2.5 py-1 bg-purple-100 text-purple-700 text-xs font-bold rounded-md shadow-sm">
+                              Custom
+                            </span>
+                          )}
+                        </div>
                         <h3 className="text-lg font-bold text-slate-800 line-clamp-2 leading-tight">{set.title}</h3>
+                        {set.lastStudied && (
+                          <p className="text-xs text-slate-400 mt-2 font-medium">Last studied: {new Date(set.lastStudied).toLocaleDateString()}</p>
+                        )}
                       </div>
                       <div className="mt-auto pt-4 border-t border-slate-100">
                         <button
@@ -1009,6 +1229,16 @@
               <div className="pt-2">
                 {avatarTab === 'my' ? (
                   <>
+                    <div className="flex justify-end mb-4">
+                      <button
+                        onClick={() => setSellExtrasModal(true)}
+                        disabled={extrasList.length === 0}
+                        className={`flex items-center gap-2 px-5 py-2.5 rounded-xl font-bold shadow-sm transition-all ${extrasList.length === 0 ? 'bg-slate-200 text-slate-400 cursor-not-allowed' : 'bg-red-50 hover:bg-red-100 text-red-600 border border-red-200'}`}
+                      >
+                        <Sparkles size={18} /> Sell All Extras
+                      </button>
+                    </div>
+
                     {/* Avatar Score Dashboard */}
                     <div className="bg-white rounded-3xl border border-slate-200 p-6 sm:p-8 shadow-sm mb-8 relative overflow-hidden">
                       <div className="absolute -right-10 -top-10 text-9xl opacity-5 mix-blend-multiply pointer-events-none">
@@ -1083,8 +1313,10 @@
                             >
                               <h3 className="text-lg font-bold text-slate-800 flex items-center">
                                 {section.title} 
-                                {section.isPack && (
+                                {section.isPack ? (
                                   <span className="text-slate-400 text-sm ml-2 font-semibold">({section.ownedCount}/{section.total})</span>
+                                ) : (
+                                  <span className="text-slate-400 text-sm ml-2 font-semibold">({section.items.length})</span>
                                 )}
                               </h3>
                               <div className="text-slate-400 bg-slate-50 p-1.5 rounded-lg">
@@ -1290,14 +1522,14 @@
     function CreateSet({ initialData, onSave, onCancel }) {
       const [title, setTitle] = useState(initialData ? initialData.title : '');
       const [questions, setQuestions] = useState(initialData ? initialData.questions : [
-        { id: Date.now().toString(), text: '', options: ['', ''], correctIndices: [0], scrambleAnswers: true }
+        { id: Date.now().toString(), type: 'multiple-choice', text: '', options: ['', ''], correctIndices: [0], scrambleAnswers: true, writtenAnswers: [''] }
       ]);
       const [error, setError] = useState('');
 
       const addQuestion = () => {
         setQuestions([
           ...questions,
-          { id: Date.now().toString(), text: '', options: ['', ''], correctIndices: [0], scrambleAnswers: true }
+          { id: Date.now().toString(), type: 'multiple-choice', text: '', options: ['', ''], correctIndices: [0], scrambleAnswers: true, writtenAnswers: [''] }
         ]);
       };
 
@@ -1322,8 +1554,8 @@
 
       const addOption = (qId) => {
         setQuestions(questions.map(q => {
-          if (q.id === qId && q.options.length < 4) {
-            return { ...q, options: [...q.options, ''] };
+          if (q.id === qId && (q.options || []).length < 4) {
+            return { ...q, options: [...(q.options || []), ''] };
           }
           return q;
         }));
@@ -1331,10 +1563,10 @@
 
       const removeOption = (qId, optionIndex) => {
         setQuestions(questions.map(q => {
-          if (q.id === qId && q.options.length > 2) {
+          if (q.id === qId && (q.options || []).length > 2) {
             const newOptions = q.options.filter((_, idx) => idx !== optionIndex);
             
-            let newCorrectIndices = q.correctIndices
+            let newCorrectIndices = (q.correctIndices || [])
               .filter(idx => idx !== optionIndex) 
               .map(idx => idx > optionIndex ? idx - 1 : idx); 
 
@@ -1351,7 +1583,7 @@
       const toggleCorrectIndex = (qId, optIndex) => {
         setQuestions(questions.map(q => {
           if (q.id === qId) {
-            let newIndices = [...q.correctIndices];
+            let newIndices = [...(q.correctIndices || [])];
             if (newIndices.includes(optIndex)) {
               newIndices = newIndices.filter(i => i !== optIndex);
             } else {
@@ -1367,6 +1599,36 @@
         setQuestions(questions.map(q => {
           if (q.id === qId) {
             return { ...q, scrambleAnswers: q.scrambleAnswers === false ? true : false };
+          }
+          return q;
+        }));
+      };
+
+      const updateWrittenAnswer = (qId, ansIndex, value) => {
+        setQuestions(questions.map(q => {
+          if (q.id === qId) {
+            const newAnswers = [...(q.writtenAnswers || [''])];
+            newAnswers[ansIndex] = value;
+            return { ...q, writtenAnswers: newAnswers };
+          }
+          return q;
+        }));
+      };
+
+      const addWrittenAnswer = (qId) => {
+        setQuestions(questions.map(q => {
+          if (q.id === qId) {
+            return { ...q, writtenAnswers: [...(q.writtenAnswers || ['']), ''] };
+          }
+          return q;
+        }));
+      };
+
+      const removeWrittenAnswer = (qId, ansIndex) => {
+        setQuestions(questions.map(q => {
+          if (q.id === qId && (q.writtenAnswers || []).length > 1) {
+            const newAnswers = q.writtenAnswers.filter((_, idx) => idx !== ansIndex);
+            return { ...q, writtenAnswers: newAnswers };
           }
           return q;
         }));
@@ -1388,14 +1650,23 @@
             setError(`Question ${i + 1} is missing text.`);
             return;
           }
-          if (q.correctIndices.length === 0) {
-            setError(`Question ${i + 1} must have at least one correct answer selected.`);
-            return;
-          }
-          for (let j = 0; j < q.options.length; j++) {
-            if (!q.options[j].trim()) {
-              setError(`An option in Question ${i + 1} is empty.`);
+          
+          if (q.type === 'written') {
+            const validWritten = (q.writtenAnswers || []).filter(ans => ans.trim() !== '');
+            if (validWritten.length === 0) {
+              setError(`Question ${i + 1} must have at least one accepted written answer.`);
               return;
+            }
+          } else {
+            if (!q.correctIndices || q.correctIndices.length === 0) {
+              setError(`Question ${i + 1} must have at least one correct answer selected.`);
+              return;
+            }
+            for (let j = 0; j < (q.options || []).length; j++) {
+              if (!q.options[j].trim()) {
+                setError(`An option in Question ${i + 1} is empty.`);
+                return;
+              }
             }
           }
         }
@@ -1406,8 +1677,10 @@
           isDefault: false, 
           questions: questions.map(q => ({
             ...q,
+            type: q.type || 'multiple-choice',
             text: q.text.trim(),
-            options: q.options.map(opt => opt.trim()),
+            options: (q.options || []).map(opt => opt.trim()),
+            writtenAnswers: (q.writtenAnswers || []).map(ans => ans.trim()).filter(ans => ans !== ''),
             scrambleAnswers: q.scrambleAnswers !== false
           }))
         });
@@ -1446,83 +1719,133 @@
           )}
 
           <div className="space-y-6">
-            {questions.map((q, qIndex) => (
-              <div key={q.id} className="bg-white rounded-2xl shadow-sm border border-slate-200 p-6 relative overflow-hidden">
-                <div className="flex justify-between items-start mb-4">
-                  <h3 className="text-lg font-bold text-slate-800">Question {qIndex + 1}</h3>
-                  {questions.length > 1 && (
-                    <button 
-                      onClick={() => removeQuestion(q.id)}
-                      className="text-slate-400 hover:text-red-500 transition-colors p-2 -mr-2"
-                      title="Remove question"
-                    >
-                      <Trash2 size={18} />
-                    </button>
-                  )}
-                </div>
-
-                <textarea
-                  value={q.text}
-                  onChange={(e) => updateQuestion(q.id, 'text', e.target.value)}
-                  placeholder="Type your question here..."
-                  className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:bg-white transition-all resize-none min-h-[100px] mb-5 placeholder:text-slate-400"
-                />
-
-                <div className="space-y-3">
-                  <label className="block text-sm font-semibold text-slate-700">Answers (Check all that are correct)</label>
-                  {q.options.map((opt, optIndex) => (
-                    <div key={optIndex} className={`flex items-center gap-3 p-2 rounded-xl border ${q.correctIndices.includes(optIndex) ? 'border-green-400 bg-green-50' : 'border-slate-200 bg-white'} transition-colors`}>
-                      <div className="flex-shrink-0 pl-2 flex items-center">
-                        <input
-                          type="checkbox"
-                          checked={q.correctIndices.includes(optIndex)}
-                          onChange={() => toggleCorrectIndex(q.id, optIndex)}
-                          className="w-5 h-5 text-indigo-600 rounded border-slate-300 focus:ring-indigo-500 cursor-pointer"
-                        />
-                      </div>
-                      <input
-                        type="text"
-                        value={opt}
-                        onChange={(e) => updateOption(q.id, optIndex, e.target.value)}
-                        placeholder={`Answer option ${optIndex + 1}`}
-                        className="w-full bg-transparent border-none focus:ring-0 p-2 outline-none"
-                      />
-                      {q.options.length > 2 && (
-                        <button 
-                          onClick={() => removeOption(q.id, optIndex)}
-                          className="text-slate-400 hover:text-red-500 pr-2 transition-colors"
-                          title="Remove option"
+            {questions.map((q, qIndex) => {
+              const isWritten = q.type === 'written';
+              return (
+                <div key={q.id} className="bg-white rounded-2xl shadow-sm border border-slate-200 p-6 relative overflow-hidden">
+                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-4">
+                    <div className="flex items-center gap-3">
+                      <h3 className="text-lg font-bold text-slate-800">Question {qIndex + 1}</h3>
+                      <div className="bg-slate-200/80 p-0.5 rounded-lg inline-flex shadow-inner">
+                        <button
+                          onClick={() => updateQuestion(q.id, 'type', 'multiple-choice')}
+                          className={`px-3 py-1 rounded-md text-xs font-bold transition-all duration-200 ${!isWritten ? 'bg-white text-indigo-700 shadow' : 'text-slate-500 hover:text-slate-700'}`}
                         >
-                          <XCircle size={18} />
+                          Multiple Choice
+                        </button>
+                        <button
+                          onClick={() => updateQuestion(q.id, 'type', 'written')}
+                          className={`px-3 py-1 rounded-md text-xs font-bold transition-all duration-200 ${isWritten ? 'bg-white text-indigo-700 shadow' : 'text-slate-500 hover:text-slate-700'}`}
+                        >
+                          Written
+                        </button>
+                      </div>
+                    </div>
+                    {questions.length > 1 && (
+                      <button 
+                        onClick={() => removeQuestion(q.id)}
+                        className="text-slate-400 hover:text-red-500 transition-colors p-2 sm:-mr-2 self-end sm:self-auto"
+                        title="Remove question"
+                      >
+                        <Trash2 size={18} />
+                      </button>
+                    )}
+                  </div>
+
+                  <textarea
+                    value={q.text}
+                    onChange={(e) => updateQuestion(q.id, 'text', e.target.value)}
+                    placeholder="Type your question here..."
+                    className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:bg-white transition-all resize-none min-h-[100px] mb-5 placeholder:text-slate-400"
+                  />
+
+                  {isWritten ? (
+                    <div className="space-y-3">
+                      <label className="block text-sm font-semibold text-slate-700">Accepted Answers</label>
+                      <p className="text-xs text-slate-500 mb-2">Type all the acceptable written responses for this question (e.g. abbreviations or synonyms). Answers are case-insensitive.</p>
+                      {(q.writtenAnswers || ['']).map((ans, ansIndex) => (
+                        <div key={ansIndex} className="flex items-center gap-3 p-2 rounded-xl border border-slate-200 bg-white transition-colors">
+                          <input
+                            type="text"
+                            value={ans}
+                            onChange={(e) => updateWrittenAnswer(q.id, ansIndex, e.target.value)}
+                            placeholder={`Accepted answer option ${ansIndex + 1}`}
+                            className="w-full bg-transparent border-none focus:ring-0 p-2 outline-none"
+                          />
+                          {(q.writtenAnswers || []).length > 1 && (
+                            <button 
+                              onClick={() => removeWrittenAnswer(q.id, ansIndex)}
+                              className="text-slate-400 hover:text-red-500 pr-2 transition-colors"
+                              title="Remove answer"
+                            >
+                              <XCircle size={18} />
+                            </button>
+                          )}
+                        </div>
+                      ))}
+                      <button 
+                        onClick={() => addWrittenAnswer(q.id)}
+                        className="mt-2 flex items-center gap-1.5 text-sm font-medium text-indigo-600 hover:text-indigo-800 transition-colors"
+                      >
+                        <Plus size={16} /> Add another accepted answer
+                      </button>
+                    </div>
+                  ) : (
+                    <div className="space-y-3">
+                      <label className="block text-sm font-semibold text-slate-700">Answers (Check all that are correct)</label>
+                      {(q.options || []).map((opt, optIndex) => (
+                        <div key={optIndex} className={`flex items-center gap-3 p-2 rounded-xl border ${(q.correctIndices || []).includes(optIndex) ? 'border-green-400 bg-green-50' : 'border-slate-200 bg-white'} transition-colors`}>
+                          <div className="flex-shrink-0 pl-2 flex items-center">
+                                <input
+                                  type="checkbox"
+                                  checked={(q.correctIndices || []).includes(optIndex)}
+                                  onChange={() => toggleCorrectIndex(q.id, optIndex)}
+                                  className="w-5 h-5 text-indigo-600 rounded border-slate-300 focus:ring-indigo-500 cursor-pointer"
+                                />
+                          </div>
+                          <input
+                            type="text"
+                            value={opt}
+                            onChange={(e) => updateOption(q.id, optIndex, e.target.value)}
+                            placeholder={`Answer option ${optIndex + 1}`}
+                            className="w-full bg-transparent border-none focus:ring-0 p-2 outline-none"
+                          />
+                          {(q.options || []).length > 2 && (
+                            <button 
+                              onClick={() => removeOption(q.id, optIndex)}
+                              className="text-slate-400 hover:text-red-500 pr-2 transition-colors"
+                              title="Remove option"
+                            >
+                              <XCircle size={18} />
+                            </button>
+                          )}
+                        </div>
+                      ))}
+                      {(q.options || []).length < 4 && (
+                        <button 
+                          onClick={() => addOption(q.id)}
+                          className="mt-4 flex items-center gap-1.5 text-sm font-medium text-indigo-600 hover:text-indigo-800 transition-colors"
+                        >
+                          <Plus size={16} /> Add another option
                         </button>
                       )}
+                      <div className="mt-5 pt-4 border-t border-slate-100 flex items-center gap-2 text-sm font-medium text-slate-600">
+                        <input
+                          type="checkbox"
+                          id={`scramble-${q.id}`}
+                          checked={q.scrambleAnswers !== false}
+                          onChange={() => toggleScramble(q.id)}
+                          className="w-4 h-4 text-indigo-600 rounded border-slate-300 focus:ring-indigo-500 cursor-pointer"
+                        />
+                        <label htmlFor={`scramble-${q.id}`} className="cursor-pointer select-none">
+                          Scramble answer order when studying this question
+                        </label>
+                      </div>
                     </div>
-                  ))}
+                  )}
                 </div>
-
-                {q.options.length < 4 && (
-                  <button 
-                    onClick={() => addOption(q.id)}
-                    className="mt-4 flex items-center gap-1.5 text-sm font-medium text-indigo-600 hover:text-indigo-800 transition-colors"
-                  >
-                    <Plus size={16} /> Add another option
-                  </button>
-                )}
-
-                <div className="mt-5 pt-4 border-t border-slate-100 flex items-center gap-2 text-sm font-medium text-slate-600">
-                  <input
-                    type="checkbox"
-                    id={`scramble-${q.id}`}
-                    checked={q.scrambleAnswers !== false}
-                    onChange={() => toggleScramble(q.id)}
-                    className="w-4 h-4 text-indigo-600 rounded border-slate-300 focus:ring-indigo-500 cursor-pointer"
-                  />
-                  <label htmlFor={`scramble-${q.id}`} className="cursor-pointer select-none">
-                    Scramble answer order when studying this question
-                  </label>
-                </div>
-              </div>
-            ))}
+              );
+            })}
           </div>
 
           <button 
@@ -1734,6 +2057,10 @@
       const [selectedOption, setSelectedOption] = useState(null);
       const [isAnswered, setIsAnswered] = useState(false);
       
+      // Written specific state
+      const [writtenInput, setWrittenInput] = useState('');
+      const [isWrittenCorrect, setIsWrittenCorrect] = useState(false);
+      
       const [shouldPlayMinigame, setShouldPlayMinigame] = useState(false);
       const [showStreakModal, setShowStreakModal] = useState(false);
       const [isPlayingFlappy, setIsPlayingFlappy] = useState(false);
@@ -1744,7 +2071,12 @@
       const [displayOptions, setDisplayOptions] = useState([]);
 
       useEffect(() => {
-        let opts = currentQuestion.options.map((text, idx) => ({ text, originalIndex: idx }));
+        if (currentQuestion.type === 'written') {
+          setDisplayOptions([]);
+          return;
+        }
+        
+        let opts = (currentQuestion.options || []).map((text, idx) => ({ text, originalIndex: idx }));
         if (currentQuestion.scrambleAnswers !== false) {
           for (let i = opts.length - 1; i > 0; i--) {
             const j = Math.floor(Math.random() * (i + 1));
@@ -1754,22 +2086,43 @@
         setDisplayOptions(opts);
       }, [currentQuestion]);
       
-      const isCorrect = isAnswered && currentQuestion.correctIndices.includes(selectedOption);
+      const isWritten = currentQuestion.type === 'written';
+      const isCorrect = isAnswered && (isWritten ? isWrittenCorrect : (currentQuestion.correctIndices || []).includes(selectedOption));
+
+      const handleWrittenSubmit = (e) => {
+        e.preventDefault();
+        if (isAnswered || !writtenInput.trim()) return;
+
+        const validAnswers = currentQuestion.writtenAnswers || [];
+        const ansIsCorrect = validAnswers.some(
+          valid => valid.trim().toLowerCase() === writtenInput.trim().toLowerCase()
+        );
+        
+        setIsWrittenCorrect(ansIsCorrect);
+        setIsAnswered(true);
+        processAnswerResult(ansIsCorrect);
+      };
 
       const handleSelect = (index) => {
-        if (isAnswered) return;
+        if (isAnswered || isWritten) return;
         
         setSelectedOption(index);
         setIsAnswered(true);
 
-        const ansIsCorrect = currentQuestion.correctIndices.includes(index);
+        const ansIsCorrect = (currentQuestion.correctIndices || []).includes(index);
+        processAnswerResult(ansIsCorrect);
+      };
+
+      const processAnswerResult = (ansIsCorrect) => {
         const stats = questionStats[currentQuestion.id] || { wrongCount: 0, hasBeenCorrect: false };
         let earnedPoints = 0;
 
         if (ansIsCorrect) {
           setStreak(prev => {
             const next = prev + 1;
-            if (next === 10 && !minigameDisabled) setShouldPlayMinigame(true);
+            if (next > 0 && next % 10 === 0 && !minigameDisabled) {
+              setShouldPlayMinigame(true);
+            }
             return next;
           });
           if (stats.wrongCount > 0 && !stats.hasBeenCorrect) {
@@ -1797,7 +2150,7 @@
       const loadNextQuestion = () => {
         setQuestionsAnswered(prev => prev + 1);
 
-        const wasCorrect = currentQuestion.correctIndices.includes(selectedOption);
+        const wasCorrect = isWritten ? isWrittenCorrect : (currentQuestion.correctIndices || []).includes(selectedOption);
         
         let nextPool = [...roundPool];
         if (wasCorrect) {
@@ -1830,6 +2183,8 @@
         const nextQ = activeSet.questions.find(q => q.id === nextId);
         setCurrentQuestion(nextQ);
         setSelectedOption(null);
+        setWrittenInput('');
+        setIsWrittenCorrect(false);
         setIsAnswered(false);
       };
 
@@ -1845,7 +2200,7 @@
         const handleEsc = (e) => {
           if (e.key === 'Escape') {
             setShowStreakModal(prev => {
-              if (prev) loadNextQRef.current(); // Skip to next question if dismissing via Escape
+              if (prev) loadNextQRef.current(); 
               return false;
             });
           }
@@ -1856,7 +2211,7 @@
 
       useEffect(() => {
         const handleKeyDown = (e) => {
-          if (showStreakModal || isPlayingFlappy || isAnswered) return;
+          if (showStreakModal || isPlayingFlappy || isAnswered || isWritten) return;
           const key = parseInt(e.key, 10);
           if (!isNaN(key) && key >= 1 && key <= displayOptions.length) {
             handleSelect(displayOptions[key - 1].originalIndex);
@@ -1865,7 +2220,7 @@
         
         window.addEventListener('keydown', handleKeyDown);
         return () => window.removeEventListener('keydown', handleKeyDown);
-      }, [isAnswered, displayOptions, showStreakModal, isPlayingFlappy]);
+      }, [isAnswered, displayOptions, showStreakModal, isPlayingFlappy, isWritten]);
 
       useEffect(() => {
         let timer;
@@ -1874,7 +2229,6 @@
         const advance = () => {
           if (shouldPlayMinigame) {
             setShouldPlayMinigame(false);
-            setStreak(0); // Reset streak
             setShowStreakModal(true);
           } else if (score >= 1000) {
             handleEndSession();
@@ -1884,8 +2238,11 @@
         };
 
         const handleSkip = (e) => {
-          if (showStreakModal || isPlayingFlappy) return; // Don't skip if handling modal/game
-          if (e.type === 'keydown' && e.key === ' ') e.preventDefault();
+          if (showStreakModal || isPlayingFlappy) return; 
+          if (e.type === 'keydown' && e.key === ' ') {
+             if (!isWritten) e.preventDefault(); 
+             else if (document.activeElement.tagName === 'INPUT') return; 
+          }
           clearTimeout(timer);
           advance();
         };
@@ -1907,7 +2264,7 @@
           window.removeEventListener('mousedown', handleSkip);
           window.removeEventListener('touchstart', handleSkip);
         };
-      }, [isAnswered, score, shouldPlayMinigame, showStreakModal, isPlayingFlappy]);
+      }, [isAnswered, score, shouldPlayMinigame, showStreakModal, isPlayingFlappy, isWritten]);
 
       if (isPlayingFlappy) {
         return (
@@ -1952,7 +2309,7 @@
                   Don't show this again!
                 </button>
                 <div className="text-6xl mb-6 animate-bounce">🔥</div>
-                <h2 className="text-4xl font-extrabold text-slate-800 mb-4">10 Streak!</h2>
+                <h2 className="text-4xl font-extrabold text-slate-800 mb-4">{streak} Streak!</h2>
                 <p className="text-slate-500 mb-8 text-lg font-medium">Amazing job! Take a quick break and play a round of Flappy Avatar.</p>
                 <button 
                   onClick={() => { setShowStreakModal(false); setIsPlayingFlappy(true); }} 
@@ -1984,49 +2341,88 @@
           <div className="bg-white rounded-3xl shadow-sm border border-slate-200 p-8 mb-6">
             <div className="flex items-center justify-between mb-4">
                <span className="text-xs font-bold tracking-wider text-indigo-500 uppercase">Infinite Mode</span>
-               <span className="text-xs text-slate-400">Press 1-{displayOptions.length} to answer</span>
+               <span className="text-xs text-slate-400">
+                 {isWritten ? 'Type your answer below' : `Press 1-${displayOptions.length} to answer`}
+               </span>
             </div>
             <h2 className="text-2xl font-bold text-slate-800 mb-8 leading-snug">
               {currentQuestion.text}
             </h2>
 
-            <div className="space-y-3">
-              {displayOptions.map((optObj, displayIndex) => {
-                const originalIndex = optObj.originalIndex;
-                let btnClass = "w-full text-left p-4 rounded-xl border-2 transition-all font-medium flex items-center justify-between ";
-                
-                if (!isAnswered) {
-                  btnClass += "border-slate-200 bg-white hover:border-indigo-300 hover:bg-slate-50 text-slate-700 cursor-pointer";
-                } else {
-                  if (currentQuestion.correctIndices.includes(originalIndex)) {
-                    btnClass += "border-green-500 bg-green-50 text-green-800"; // Always highlight all correct answers
-                  } else if (selectedOption === originalIndex) {
-                    btnClass += "border-red-500 bg-red-50 text-red-800"; // Highlight wrong choice
-                  } else {
-                    btnClass += "border-slate-200 bg-slate-50 text-slate-400 opacity-60"; // Fade others
-                  }
-                }
-
-                return (
-                  <button
-                    key={originalIndex}
-                    onClick={() => handleSelect(originalIndex)}
-                    disabled={isAnswered}
-                    className={btnClass}
-                  >
-                    <div className="flex items-center gap-3">
-                      <span className={`flex items-center justify-center w-6 h-6 rounded-md text-xs font-bold ${!isAnswered ? 'bg-slate-100 text-slate-500' : 'bg-transparent'}`}>
-                        {!isAnswered && displayIndex + 1}
-                      </span>
-                      <span>{optObj.text}</span>
-                    </div>
-                    
-                    {isAnswered && currentQuestion.correctIndices.includes(originalIndex) && <CheckCircle2 className="text-green-600" size={20} />}
-                    {isAnswered && selectedOption === originalIndex && !currentQuestion.correctIndices.includes(originalIndex) && <XCircle className="text-red-500" size={20} />}
+            {isWritten ? (
+              <form onSubmit={handleWrittenSubmit} className="space-y-4">
+                <input 
+                  type="text" 
+                  value={writtenInput}
+                  onChange={(e) => setWrittenInput(e.target.value)}
+                  disabled={isAnswered}
+                  autoFocus
+                  placeholder="Type your answer here..."
+                  className={`w-full p-4 rounded-xl border-2 text-lg font-medium outline-none transition-all ${
+                    !isAnswered 
+                      ? 'border-slate-200 bg-white focus:border-indigo-400 focus:ring-4 focus:ring-indigo-50' 
+                      : isWrittenCorrect 
+                        ? 'border-green-500 bg-green-50 text-green-800' 
+                        : 'border-red-500 bg-red-50 text-red-800'
+                  }`}
+                />
+                {!isAnswered && (
+                  <button type="submit" disabled={!writtenInput.trim()} className="w-full py-4 bg-indigo-600 text-white rounded-xl font-bold text-lg hover:bg-indigo-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed">
+                    Submit Answer
                   </button>
-                );
-              })}
-            </div>
+                )}
+                {isAnswered && !isWrittenCorrect && (
+                  <div className="p-5 bg-green-50 border border-green-200 rounded-xl mt-4 text-left">
+                    <p className="text-sm font-bold text-green-800 mb-2">Accepted Answers:</p>
+                    <div className="flex flex-wrap gap-2">
+                      {(currentQuestion.writtenAnswers || []).map((ans, idx) => (
+                        <span key={idx} className="bg-white text-green-700 font-bold px-3 py-1.5 rounded-lg border border-green-200 shadow-sm">
+                          {ans}
+                        </span>
+                      ))}
+                    </div>
+                  </div>
+                )}
+              </form>
+            ) : (
+              <div className="space-y-3">
+                {displayOptions.map((optObj, displayIndex) => {
+                  const originalIndex = optObj.originalIndex;
+                  let btnClass = "w-full text-left p-4 rounded-xl border-2 transition-all font-medium flex items-center justify-between ";
+                  
+                  if (!isAnswered) {
+                    btnClass += "border-slate-200 bg-white hover:border-indigo-300 hover:bg-slate-50 text-slate-700 cursor-pointer";
+                  } else {
+                    if ((currentQuestion.correctIndices || []).includes(originalIndex)) {
+                      btnClass += "border-green-500 bg-green-50 text-green-800"; // Always highlight all correct answers
+                    } else if (selectedOption === originalIndex) {
+                      btnClass += "border-red-500 bg-red-50 text-red-800"; // Highlight wrong choice
+                    } else {
+                      btnClass += "border-slate-200 bg-slate-50 text-slate-400 opacity-60"; // Fade others
+                    }
+                  }
+
+                  return (
+                    <button
+                      key={originalIndex}
+                      onClick={() => handleSelect(originalIndex)}
+                      disabled={isAnswered}
+                      className={btnClass}
+                    >
+                      <div className="flex items-center gap-3">
+                        <span className={`flex items-center justify-center w-6 h-6 rounded-md text-xs font-bold ${!isAnswered ? 'bg-slate-100 text-slate-500' : 'bg-transparent'}`}>
+                          {!isAnswered && displayIndex + 1}
+                        </span>
+                        <span>{optObj.text}</span>
+                      </div>
+                      
+                      {isAnswered && (currentQuestion.correctIndices || []).includes(originalIndex) && <CheckCircle2 className="text-green-600" size={20} />}
+                      {isAnswered && selectedOption === originalIndex && !(currentQuestion.correctIndices || []).includes(originalIndex) && <XCircle className="text-red-500" size={20} />}
+                    </button>
+                  );
+                })}
+              </div>
+            )}
           </div>
 
           <div className="flex justify-center items-center h-16">
@@ -2069,7 +2465,17 @@
               </div>
               
               <h2 className="text-3xl font-extrabold text-slate-800 mb-2">Game Over!</h2>
-              <p className="text-slate-500 mb-8 font-medium">{activeSet.title}</p>
+              <p className="text-slate-500 mb-6 font-medium">{activeSet.title}</p>
+              
+              <div className="flex justify-center mb-6">
+                 <div className="inline-flex items-center gap-2 bg-purple-100 border border-purple-200 px-4 py-2 rounded-xl shadow-sm">
+                    <span className="text-purple-600 font-bold uppercase tracking-wider text-sm">Earned:</span>
+                    <span className="text-purple-800 font-black text-xl flex items-center gap-1">+{activeSet.gemsEarned || 0} <Gem size={18} className="fill-purple-300"/></span>
+                 </div>
+              </div>
+              {activeSet.dailyLimitHit && (
+                 <p className="text-red-500 font-bold text-sm mb-6 flex justify-center items-center gap-1.5"><AlertCircle size={16}/> Daily gem limit reached (2000/2000)</p>
+              )}
               
               <div className="bg-slate-50 rounded-2xl p-6 mb-8 border border-slate-100 flex gap-4 divide-x divide-slate-200">
                 <div className="flex-1">
@@ -2217,59 +2623,82 @@
               Questions <span className="bg-slate-200 text-slate-600 text-sm py-0.5 px-2.5 rounded-full">{set.questions.length}</span>
             </h2>
             
-            {set.questions.map((q, index) => (
-              <div key={q.id} className="bg-white rounded-2xl border border-slate-200 overflow-hidden shadow-sm hover:shadow-md transition-shadow">
-                <div 
-                  onClick={() => toggleQ(q.id)}
-                  className="p-5 cursor-pointer flex items-start gap-4"
-                >
-                  <div className="w-8 h-8 shrink-0 bg-indigo-50 text-indigo-600 rounded-full flex items-center justify-center font-bold">
-                    {index + 1}
+            {set.questions.map((q, index) => {
+              const isWritten = q.type === 'written';
+              return (
+                <div key={q.id} className="bg-white rounded-2xl border border-slate-200 overflow-hidden shadow-sm hover:shadow-md transition-shadow">
+                  <div 
+                    onClick={() => toggleQ(q.id)}
+                    className="p-5 cursor-pointer flex items-start gap-4"
+                  >
+                    <div className="w-8 h-8 shrink-0 bg-indigo-50 text-indigo-600 rounded-full flex items-center justify-center font-bold">
+                      {index + 1}
+                    </div>
+                    <div className="flex-1">
+                      <div className="flex items-start justify-between gap-2">
+                        <h3 className="text-lg font-bold text-slate-800 pr-4">{q.text}</h3>
+                        {isWritten && (
+                          <span className="shrink-0 bg-slate-100 text-slate-500 text-[10px] font-extrabold uppercase tracking-wider px-2 py-1 rounded-md">Written</span>
+                        )}
+                      </div>
+                      <div className="mt-2 flex items-center gap-1.5 text-xs font-medium text-slate-500">
+                        {!isWritten && (
+                          q.scrambleAnswers !== false ? (
+                            <><Shuffle size={14} /> Shuffled Answers</>
+                          ) : (
+                            <><ListOrdered size={14} /> Fixed Order</>
+                          )
+                        )}
+                      </div>
+                    </div>
+                    <div className="shrink-0 text-slate-400 mt-1">
+                      {expandedQs[q.id] ? <ChevronUp size={20} /> : <ChevronDown size={20} />}
+                    </div>
                   </div>
-                  <div className="flex-1">
-                    <h3 className="text-lg font-bold text-slate-800 pr-4">{q.text}</h3>
-                    <div className="mt-2 flex items-center gap-1.5 text-xs font-medium text-slate-500">
-                      {q.scrambleAnswers !== false ? (
-                        <><Shuffle size={14} /> Shuffled Answers</>
+
+                  {expandedQs[q.id] && (
+                    <div className="p-5 pt-0 bg-slate-50 border-t border-slate-100">
+                      {isWritten ? (
+                        <div className="mt-4">
+                          <p className="text-sm font-bold text-slate-500 mb-2 uppercase tracking-wider">Accepted Answers:</p>
+                          <div className="flex flex-wrap gap-2">
+                            {(q.writtenAnswers || []).map((ans, idx) => (
+                              <div key={idx} className="bg-white border border-green-200 text-green-700 font-bold px-3 py-1.5 rounded-lg shadow-sm flex items-center gap-2">
+                                <CheckCircle2 size={16} className="text-green-500" /> {ans}
+                              </div>
+                            ))}
+                          </div>
+                        </div>
                       ) : (
-                        <><ListOrdered size={14} /> Fixed Order</>
+                        <div className="mt-4 space-y-2">
+                          {(q.options || []).map((opt, optIdx) => {
+                            const isCorrect = (q.correctIndices || []).includes(optIdx);
+                            return (
+                              <div 
+                                key={optIdx} 
+                                className={`flex items-center gap-3 p-3 rounded-xl border ${isCorrect ? 'border-green-200 bg-green-50/50' : 'border-slate-200 bg-white'}`}
+                              >
+                                <div className={`shrink-0 ${isCorrect ? 'text-green-500' : 'text-slate-300'}`}>
+                                  {isCorrect ? <CheckCircle2 size={20} /> : <XCircle size={20} />}
+                                </div>
+                                <span className={`font-medium ${isCorrect ? 'text-green-800' : 'text-slate-600'}`}>
+                                  {opt}
+                                </span>
+                                {isCorrect && (
+                                  <span className="ml-auto text-xs font-bold text-green-600 bg-green-100 px-2 py-0.5 rounded-full">
+                                    Correct
+                                  </span>
+                                )}
+                              </div>
+                            );
+                          })}
+                        </div>
                       )}
                     </div>
-                  </div>
-                  <div className="shrink-0 text-slate-400 mt-1">
-                    {expandedQs[q.id] ? <ChevronUp size={20} /> : <ChevronDown size={20} />}
-                  </div>
+                  )}
                 </div>
-
-                {expandedQs[q.id] && (
-                  <div className="p-5 pt-0 bg-slate-50 border-t border-slate-100">
-                    <div className="mt-4 space-y-2">
-                      {q.options.map((opt, optIdx) => {
-                        const isCorrect = q.correctIndices.includes(optIdx);
-                        return (
-                          <div 
-                            key={optIdx} 
-                            className={`flex items-center gap-3 p-3 rounded-xl border ${isCorrect ? 'border-green-200 bg-green-50/50' : 'border-slate-200 bg-white'}`}
-                          >
-                            <div className={`shrink-0 ${isCorrect ? 'text-green-500' : 'text-slate-300'}`}>
-                              {isCorrect ? <CheckCircle2 size={20} /> : <XCircle size={20} />}
-                            </div>
-                            <span className={`font-medium ${isCorrect ? 'text-green-800' : 'text-slate-600'}`}>
-                              {opt}
-                            </span>
-                            {isCorrect && (
-                              <span className="ml-auto text-xs font-bold text-green-600 bg-green-100 px-2 py-0.5 rounded-full">
-                                Correct
-                              </span>
-                            )}
-                          </div>
-                        );
-                      })}
-                    </div>
-                  </div>
-                )}
-              </div>
-            ))}
+              );
+            })}
           </div>
         </div>
       );
